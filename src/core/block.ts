@@ -1,5 +1,7 @@
 import * as THREE from "three";
 
+const BLOCK_SIZE: Array<number> = [8, 2, 8];
+
 export default class Block {
   constructor(scene: THREE.Scene) {
     this.scene = scene;
@@ -9,10 +11,9 @@ export default class Block {
   scene: THREE.Scene;
 
   generateBlocks = () => {
-    const geometry = new THREE.BoxGeometry(20,10,30);
+    const geometry = new THREE.BoxGeometry(...BLOCK_SIZE);
     const material = new THREE.MeshPhongMaterial({ color: 0x6a9b8c });
     const cube = new THREE.Mesh(geometry, material);
-    cube.position.set(10,10,10)
     this.scene.add(cube);
   };
 }
