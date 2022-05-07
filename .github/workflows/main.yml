@@ -35,7 +35,6 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@4.1.0
         env:
           base_branch: main
-          SUPER_SECRET: ${{ secrets.THREE }}
         with:
           token: ${{ secrets.THREE }}
           branch: gh-pages
