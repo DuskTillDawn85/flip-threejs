@@ -10,16 +10,14 @@ export default class Avatar {
 
   scene: THREE.Scene;
   loader: GLTFLoader;
+  avatar: THREE.Object3D = new THREE.Object3D();
 
   initAvatar = () => {
     this.loader.load("src/static/avatar.glb", glb => {
-      let avatar = glb.scene.children[0];
-      avatar.position.set(0, 1, 0);
-      avatar.rotation.set(0, Math.PI / 2, 0);
-      avatar.scale.set(2, 2, 2);
-
-      const axes = new THREE.AxesHelper(100);
-      avatar.add(axes);
+      this.avatar = glb.scene.children[0];
+      this.avatar.position.set(0, 1, 0);
+      this.avatar.rotation.set(0, Math.PI / 2, 0);
+      this.avatar.scale.set(2, 2, 2);
 
       // 只针对Geometry有效
       // avatar.castShadow = true
@@ -29,7 +27,7 @@ export default class Avatar {
         node.castShadow = true;
       });
 
-      this.scene.add(avatar);
+      this.scene.add(this.avatar);
     });
   };
 }

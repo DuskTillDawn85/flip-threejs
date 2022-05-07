@@ -12,12 +12,11 @@ const stats = core.stats;
 const block = new Block(scene);
 const avatar = new Avatar(scene);
 
-const control = new Control(scene, camera, renderer).controls;
+const control = new Control(scene, camera, renderer, avatar);
 
 (function animate() {
   requestAnimationFrame(animate);
 
-  // camera.position.x += 0.1;
   stats.update();
   control.update();
   renderer.render(scene, camera);
