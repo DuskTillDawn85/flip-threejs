@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "A wx-flip clone based on Three.js",
   "main": "index.js",
-  "homepage": "https://DuskTillDawn85.github.io/flip-threejs",
+  "homepage": "https://DuskTillDawn85.github.io/flip-threejs/",
   "scripts": {
     "dev": "vite --host",
     "build": "vite build"
