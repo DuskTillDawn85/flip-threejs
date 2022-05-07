@@ -35,7 +35,7 @@ jobs:
           npm run build
         
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@4.3.3
+        uses: JamesIves/github-pages-deploy-action@v4.3.3
         env:
           base_branch: main
         with:
