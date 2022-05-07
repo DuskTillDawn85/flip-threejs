@@ -28,8 +28,7 @@ jobs:
 
       - name: Install and Build 🔧
         run: |
-          npm i pnpm
-          pnpm i
+          npm i
           npm run build
         
       - name: Deploy 🚀
