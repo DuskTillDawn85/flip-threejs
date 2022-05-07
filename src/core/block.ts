@@ -11,9 +11,10 @@ export default class Block {
   scene: THREE.Scene;
 
   generateBlocks = () => {
-    const geometry = new THREE.BoxGeometry(...BLOCK_SIZE);
-    const material = new THREE.MeshPhongMaterial({ color: 0x6a9b8c });
-    const cube = new THREE.Mesh(geometry, material);
+    const cubeG = new THREE.BoxGeometry(...BLOCK_SIZE);
+    const cubeM = new THREE.MeshPhongMaterial({ color: 0x2c9678 });
+    const cube = new THREE.Mesh(cubeG, cubeM);
+    cube.receiveShadow = cube.castShadow = true;
     this.scene.add(cube);
   };
 }

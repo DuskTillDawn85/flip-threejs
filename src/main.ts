@@ -18,7 +18,7 @@ const control = new Control(scene, camera, renderer).controls;
   requestAnimationFrame(animate);
 
   // camera.position.x += 0.1;
-  renderer.render(scene, camera);
   stats.update();
   control.update();
+  renderer.render(scene, camera);
 })();

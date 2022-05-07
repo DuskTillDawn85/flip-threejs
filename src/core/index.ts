@@ -42,19 +42,24 @@ export default class Core {
 
   initScene = () => {
     // 正面主要光源
-    const sunLight = new THREE.PointLight(0xffffff, 0.5);
-    sunLight.position.set(50, 50, 50);
-    this.scene.add(sunLight);
+    const dLight = new THREE.DirectionalLight(0xffffff);
+    dLight.position.set(5, 10, 10);
+    dLight.castShadow = true;
+    this.scene.add(dLight);
+
+    // Helper
+    const dLightHelper = new THREE.DirectionalLightHelper(dLight);
+    this.scene.add(dLightHelper);
 
     // 环境光
-    const ambientLight = new THREE.AmbientLight(0x404040);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     this.scene.add(ambientLight);
-    const light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
-    this.scene.add(light);
   };
 
   initRenderer = () => {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.shadowMap.enabled = true; // 启用阴影
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild(this.renderer.domElement);
 
     // show Realtime FPS
@@ -67,9 +72,12 @@ export default class Core {
 
   initHelper = () => {
     // 辅助对象
+
+    // 网格
     const gridHelper = new THREE.GridHelper(100, 100);
     this.scene.add(gridHelper);
 
+    // 坐标轴
     const axes = new THREE.AxesHelper(100);
     this.scene.add(axes);
   };

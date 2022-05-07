@@ -21,6 +21,14 @@ export default class Avatar {
       const axes = new THREE.AxesHelper(100);
       avatar.add(axes);
 
+      // 只针对Geometry有效
+      // avatar.castShadow = true
+
+      // 导入模型激活阴影
+      glb.scene.traverse(node => {
+        node.castShadow = true;
+      });
+
       this.scene.add(avatar);
     });
   };
