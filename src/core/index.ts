@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { PlaneHelper } from "three";
 import Stats from "three/examples/jsm/libs/stats.module";
 
 export default class Core {
@@ -43,23 +44,40 @@ export default class Core {
   initScene = () => {
     // 正面主要光源
     const dLight = new THREE.DirectionalLight(0xffffff);
-    dLight.position.set(5, 10, 10);
-    dLight.castShadow = true;
+    dLight.intensity = 0.3;
+    dLight.position.set(5, 10, 5);
     this.scene.add(dLight);
 
+    const pLight = new THREE.PointLight(0xffffff);
+    pLight.castShadow = true;
+    pLight.position.set(10, 20, 10);
+    this.scene.add(pLight);
+
     // Helper
+    const pLightHelper = new THREE.PointLightHelper(pLight);
+    this.scene.add(pLightHelper);
     const dLightHelper = new THREE.DirectionalLightHelper(dLight);
     this.scene.add(dLightHelper);
 
     // 环境光
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     this.scene.add(ambientLight);
+
+    // Ground (for shadow receiver)
+    const planeG = new THREE.PlaneGeometry(100, 100);
+    const planeM = new THREE.MeshLambertMaterial({ color: 0xd1c2d3 });
+    const plane = new THREE.Mesh(planeG, planeM);
+    plane.rotation.x = -Math.PI / 2;
+    plane.position.y = -1;
+    plane.receiveShadow = true;
+    this.scene.add(plane);
   };
 
   initRenderer = () => {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true; // 启用阴影
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.setClearColor(0xd1c2d3);
     document.body.appendChild(this.renderer.domElement);
 
     // show Realtime FPS
@@ -74,8 +92,8 @@ export default class Core {
     // 辅助对象
 
     // 网格
-    const gridHelper = new THREE.GridHelper(100, 100);
-    this.scene.add(gridHelper);
+    // const gridHelper = new THREE.GridHelper(100, 100);
+    // this.scene.add(gridHelper);
 
     // 坐标轴
     const axes = new THREE.AxesHelper(100);

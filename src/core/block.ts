@@ -12,7 +12,7 @@ export default class Block {
 
   generateBlocks = () => {
     const cubeG = new THREE.BoxGeometry(...BLOCK_SIZE);
-    const cubeM = new THREE.MeshPhongMaterial({ color: 0x2c9678 });
+    const cubeM = new THREE.MeshPhongMaterial({ color: 0x74759b });
     const cube = new THREE.Mesh(cubeG, cubeM);
     cube.receiveShadow = cube.castShadow = true;
     this.scene.add(cube);
