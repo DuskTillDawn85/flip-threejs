@@ -19,9 +19,6 @@ export default class Avatar {
       this.avatar.rotation.set(0, Math.PI / 2, 0);
       this.avatar.scale.set(2, 2, 2);
 
-      // 只针对Geometry有效
-      // avatar.castShadow = true
-
       // 导入模型激活阴影
       glb.scene.traverse(node => {
         node.castShadow = true;
@@ -30,4 +27,6 @@ export default class Avatar {
       this.scene.add(this.avatar);
     });
   };
+
+  getPosition = () => this.avatar.position
 }

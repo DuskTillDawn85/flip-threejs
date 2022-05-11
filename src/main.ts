@@ -9,10 +9,10 @@ const scene = core.scene;
 const renderer = core.renderer;
 const stats = core.stats;
 
-const block = new Block(scene);
+const block = new Block(scene).block;
 const avatar = new Avatar(scene);
 
-const control = new Control(scene, camera, renderer, avatar);
+const control = new Control(scene, camera, renderer, avatar, block);
 
 (function animate() {
   requestAnimationFrame(animate);
