@@ -4,9 +4,9 @@ import Block from "./block";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 enum Result {
-  success= 'block',  // success, continue
-  edge = 'edge',   // on the edge of block
-  blank = 'blank'   // falling on the ground
+  success = "block", // success, continue
+  edge = "edge", // on the edge of block
+  blank = "blank", // falling on the ground
 }
 
 export default class Control {
@@ -66,18 +66,23 @@ export default class Control {
   };
 
   private setJumpFrame = () => {
-    const pos = this.avatar.avatar.position;
-    
+    const aPos = this.avatar.avatar.position;
+    const bPos = this.block.blocks[this.block.blocks.length - 2].position;
+
     // In the Air, keep moving
-    if (pos.y >= 1) {
-      pos.x += this.speedX;
-      pos.y += this.speedY;
+    if (aPos.y >= 1) {
+      // set jump direction
+      bPos.x === this.block.block.position.x ? (aPos.z -= this.speedX) : (aPos.x += this.speedX);
+      // aPos.x += this.speedX;
+      aPos.y += this.speedY;
 
       this.speedY -= 0.005; // Gravity
     } else {
       // On block, stop moving
-      pos.y = 1;
+      aPos.y = 1;
       this.isJumping = false;
+
+      this.block.generateBlocks();
     }
   };
 
