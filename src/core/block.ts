@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-const BLOCK_SIZE: Array<number> = [8, 2, 8];
+const BLOCK_SIZE: Array<number> = [6, 2, 6];
 
 export default class Block {
   constructor(scene: THREE.Scene) {
@@ -13,7 +13,7 @@ export default class Block {
 
   generateBlocks = () => {
     const cubeG = new THREE.BoxGeometry(...BLOCK_SIZE);
-    const cubeM = new THREE.MeshPhongMaterial({ color: 0x74759b });
+    const cubeM = new THREE.MeshPhongMaterial({ color: 0xbebebe });
     this.block = new THREE.Mesh(cubeG, cubeM);
     this.block.receiveShadow = this.block.castShadow = true;
     this.scene.add(this.block);
@@ -21,7 +21,7 @@ export default class Block {
 
     const block2 = new THREE.Mesh(cubeG, cubeM);
     block2.receiveShadow = block2.castShadow = true;
-    block2.position.set(20, 0, 0)
+    block2.position.set(15, 0, 0)
     this.scene.add(block2);
   };
 }

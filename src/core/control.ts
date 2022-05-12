@@ -1,6 +1,13 @@
 import * as THREE from "three";
 import Avatar from "./avatar";
+import Block from "./block";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+
+enum Result {
+  success= 'block',  // success, continue
+  edge = 'edge',   // on the edge of block
+  blank = 'blank'   // falling on the ground
+}
 
 export default class Control {
   constructor(
@@ -8,7 +15,7 @@ export default class Control {
     camera: THREE.PerspectiveCamera,
     renderer: THREE.Renderer,
     avatar: Avatar,
-    block: THREE.Mesh
+    block: Block
   ) {
     this.scene = scene;
     this.camera = camera;
@@ -17,7 +24,6 @@ export default class Control {
     this.avatar = avatar;
     this.block = block;
     this.initEventListeners();
-    this.initRayCaster();
   }
 
   scene: THREE.Scene;
@@ -25,21 +31,18 @@ export default class Control {
   renderer: THREE.Renderer;
   controls: OrbitControls;
   avatar: Avatar;
-  block: THREE.Mesh;
+  block: Block;
 
-  // Jump
-  isJumping = false;
+  // Jump Attr
+  isJumping: boolean = false;
   keydownTime = 0;
-  deltaTime = 0;
-  velocity = 0;
-  gravity = 9.8;
-  theta = 0;
-  raycaster = new THREE.Raycaster();
+  speedX = 0.2; // Horizon Speed
+  speedY = 0; // Vertical Speed
 
   keydownHandler = (e: KeyboardEvent) => {
     if (e.key !== " " || this.isJumping) return;
 
-    if (this.keydownTime === 0) {
+    if (this.keydownTime == 0) {
       this.keydownTime = performance.now();
     }
   };
@@ -47,15 +50,14 @@ export default class Control {
   keyupHandler = (e: KeyboardEvent) => {
     if (e.key !== " ") return;
 
-    this.deltaTime = (performance.now() - this.keydownTime) / 1000;
+    // Set initial vertical speed
+    this.speedY = (performance.now() - this.keydownTime) / 4000;
     this.keydownTime = 0;
 
     // Throttle
-    if (this.deltaTime < 0.3) return;
+    if (this.speedY < 0.1) return;
 
     this.isJumping = true;
-    this.velocity = this.deltaTime * 15; // initial speed V0
-    this.theta = this.deltaTime * 0.8;
   };
 
   initEventListeners = () => {
@@ -63,39 +65,18 @@ export default class Control {
     document.body.addEventListener("keyup", this.keyupHandler);
   };
 
-  initRayCaster = () => {
-    this.raycaster.ray.direction = new THREE.Vector3(0, -1, 0);
-    this.raycaster.far = 0.1;
-
-    // this.raycaster.ray.origin = new THREE.Vector3(0.3, 1.1, 0);
-    // const collide = this.raycaster.intersectObject(this.block).length;
-    // console.log("collide :>> ", collide);
-  };
-
-  t = 0;
-  angle = 60;
   private setJumpFrame = () => {
     const pos = this.avatar.avatar.position;
-
-    if (pos.y < 0) return;
-
-    this.t += 0.1;
-    const distance = 2 * Math.cos(this.angle) * this.t - this.t ** 2;
-    console.log(distance * Math.cos(this.angle));
-    this.avatar.avatar.position.set(
-      pos.x + distance * Math.cos(this.angle),
-      pos.y + distance * Math.sin(this.angle),
-      0
-    );
     
+    // In the Air, keep moving
+    if (pos.y >= 1) {
+      pos.x += this.speedX;
+      pos.y += this.speedY;
 
-    // Update Ray origin coords according to Avatar
-    this.raycaster.ray.origin = pos;
-    const collide = this.raycaster.intersectObject(this.block).length;
-
-    // Before jump or collide with block
-    if (collide) {
-      this.velocity = 0;
+      this.speedY -= 0.005; // Gravity
+    } else {
+      // On block, stop moving
+      pos.y = 1;
       this.isJumping = false;
     }
   };
