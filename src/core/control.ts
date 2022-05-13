@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import Avatar from "./avatar";
 import Block from "./block";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 enum Result {
   success = "block", // success, continue
@@ -12,7 +11,7 @@ enum Result {
 export default class Control {
   constructor(
     scene: THREE.Scene,
-    camera: THREE.PerspectiveCamera,
+    camera: THREE.OrthographicCamera,
     renderer: THREE.Renderer,
     avatar: Avatar,
     block: Block
@@ -20,16 +19,14 @@ export default class Control {
     this.scene = scene;
     this.camera = camera;
     this.renderer = renderer;
-    this.controls = new OrbitControls(camera, renderer.domElement);
     this.avatar = avatar;
     this.block = block;
     this.initEventListeners();
   }
 
   scene: THREE.Scene;
-  camera: THREE.PerspectiveCamera;
+  camera: THREE.OrthographicCamera;
   renderer: THREE.Renderer;
-  controls: OrbitControls;
   avatar: Avatar;
   block: Block;
 
@@ -73,7 +70,6 @@ export default class Control {
     if (aPos.y >= 1) {
       // set jump direction
       bPos.x === this.block.block.position.x ? (aPos.z -= this.speedX) : (aPos.x += this.speedX);
-      // aPos.x += this.speedX;
       aPos.y += this.speedY;
 
       this.speedY -= 0.005; // Gravity
@@ -87,8 +83,6 @@ export default class Control {
   };
 
   update = () => {
-    this.controls.update();
-
     this.isJumping && this.setJumpFrame();
   };
 }

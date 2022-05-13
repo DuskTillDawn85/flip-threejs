@@ -3,7 +3,14 @@ import Stats from "three/examples/jsm/libs/stats.module";
 
 export default class Core {
   constructor() {
-    this.camera = new THREE.PerspectiveCamera();
+    this.camera = new THREE.OrthographicCamera(
+      window.innerWidth / -80,
+      window.innerWidth / 80,
+      window.innerHeight / 80,
+      window.innerHeight / -80,
+      0,
+      5000
+    );
     this.scene = new THREE.Scene();
     this.renderer = new THREE.WebGLRenderer();
     this.stats = Stats();
@@ -13,29 +20,19 @@ export default class Core {
     this.initHelper();
   }
 
-  camera: THREE.PerspectiveCamera;
+  camera: THREE.OrthographicCamera;
   scene: THREE.Scene;
   renderer: THREE.WebGLRenderer;
   stats: Stats;
 
   initCamera = () => {
-    /**
-     * fov — 摄像机视锥体垂直视野角度
-     * aspect — 摄像机视锥体长宽比
-     * near — 摄像机视锥体近端面
-     * far — 摄像机视锥体远端面
-     */
-    this.camera.fov = 50;
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.position.set(-20, 20, 20);
-    this.camera.lookAt(this.scene.position);
-    this.camera.filmOffset = 8;
+    this.camera.position.set(-200, 200, 200);
+    this.camera.lookAt(0,0,0)
 
     // 更新摄像机投影矩阵。在任何参数被改变以后必须被调用。
     this.camera.updateProjectionMatrix();
 
     window.addEventListener("resize", () => {
-      this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
     });
   };
@@ -48,8 +45,8 @@ export default class Core {
     this.scene.add(dLight);
 
     // Helper
-    const dLightHelper = new THREE.DirectionalLightHelper(dLight);
-    this.scene.add(dLightHelper);
+    // const dLightHelper = new THREE.DirectionalLightHelper(dLight);
+    // this.scene.add(dLightHelper);
 
     // Environment Light
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
@@ -82,11 +79,9 @@ export default class Core {
 
   initHelper = () => {
     // 辅助对象
-
-    // 网格
-    // const gridHelper = new THREE.GridHelper(100, 100);
-    // this.scene.add(gridHelper);
-
+    const cameraHelper = new THREE.CameraHelper(this.camera)
+    this.scene.add(cameraHelper)
+    
     // 坐标轴
     const axes = new THREE.AxesHelper(100);
     this.scene.add(axes);

@@ -9,7 +9,7 @@ const scene = core.scene;
 const renderer = core.renderer;
 const stats = core.stats;
 
-const block = new Block(scene,camera);
+const block = new Block(scene, camera);
 const avatar = new Avatar(scene);
 
 const control = new Control(scene, camera, renderer, avatar, block);
