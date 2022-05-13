@@ -48,7 +48,7 @@ export default class Control {
     if (e.key !== " ") return;
 
     // Set initial vertical speed
-    this.speedY = (performance.now() - this.keydownTime) / 4000;
+    this.speedY = (performance.now() - this.keydownTime) / 2000;
     this.keydownTime = 0;
 
     // Throttle
@@ -72,7 +72,7 @@ export default class Control {
       bPos.x === this.block.block.position.x ? (aPos.z -= this.speedX) : (aPos.x += this.speedX);
       aPos.y += this.speedY;
 
-      this.speedY -= 0.005; // Gravity
+      this.speedY -= 0.01; // Gravity
     } else {
       // On block, stop moving
       aPos.y = 1;

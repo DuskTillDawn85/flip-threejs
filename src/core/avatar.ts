@@ -13,7 +13,7 @@ export default class Avatar {
   avatar: THREE.Object3D = new THREE.Object3D();
 
   initAvatar = () => {
-    this.loader.load("src/static/avatar2.glb", glb => {
+    this.loader.load("src/assets/model/avatar2.glb", glb => {
       this.avatar = glb.scene.children[0];
       this.avatar.position.set(0, 1, 0);
       this.avatar.rotation.set(0,  Math.PI / 2, 0);
