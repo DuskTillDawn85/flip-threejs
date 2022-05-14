@@ -18,5 +18,26 @@
 
 ![跳跃方向](src/assets/img/jump.png)
 
+```javascript
+// Core Logic
+const aPos = this.avatar.avatar.position;
+const bPos = this.block.block.position;
+this.jumpDirection =
+  bPos.x === this.block.blocks[this.block.blocks.length - 2].position.x ? "left" : "right";
+this.speedOffset =
+  this.jumpDirection === "right"
+    ? ((bPos.z - aPos.z) / (bPos.x - aPos.x)) * this.speedX
+    : ((bPos.x - aPos.x) / (bPos.z - aPos.z)) * this.speedX;
+
+if (this.jumpDirection === "left") {
+  aPos.z -= this.speedX;
+  aPos.x -= this.speedOffset;
+} else {
+  // right
+  aPos.x += this.speedX;
+  aPos.z += this.speedOffset;
+}
+```
+
 ## 功能结构
 ![功能结构图](src/assets/img/struct.png)

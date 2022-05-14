@@ -35,6 +35,8 @@ export default class Control {
   keydownTime = 0;
   speedX = 0.2; // Horizon Speed
   speedY = 0; // Vertical Speed
+  speedOffset = 0;
+  jumpDirection = "";
 
   keydownHandler = (e: KeyboardEvent) => {
     if (e.key !== " " || this.isJumping) return;
@@ -49,6 +51,14 @@ export default class Control {
 
     // Set speed
     this.speedY = (performance.now() - this.keydownTime) / 2000;
+    const aPos = this.avatar.avatar.position;
+    const bPos = this.block.block.position;
+    this.jumpDirection =
+      bPos.x === this.block.blocks[this.block.blocks.length - 2].position.x ? "left" : "right";
+    this.speedOffset =
+      this.jumpDirection === "right"
+        ? ((bPos.z - aPos.z) / (bPos.x - aPos.x)) * this.speedX
+        : ((bPos.x - aPos.x) / (bPos.z - aPos.z)) * this.speedX;
 
     // Throttle
     if (this.speedY < 0.1) return;
@@ -64,12 +74,17 @@ export default class Control {
 
   private setJumpFrame = () => {
     const aPos = this.avatar.avatar.position;
-    const bPos = this.block.blocks[this.block.blocks.length - 2].position;
-
 
     if (aPos.y >= 1) {
-      // set jump direction
-      bPos.x === this.block.block.position.x ? (aPos.z -= this.speedX) : (aPos.x += this.speedX);
+      // In the Air, keep moving
+      if (this.jumpDirection === "left") {
+        aPos.z -= this.speedX;
+        aPos.x -= this.speedOffset;
+      } else {
+        // right
+        aPos.x += this.speedX;
+        aPos.z += this.speedOffset;
+      }
       aPos.y += this.speedY;
 
       this.speedY -= 0.01; // Gravity
