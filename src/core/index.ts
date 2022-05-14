@@ -17,7 +17,7 @@ export default class Core {
     this.initScene();
     this.initRenderer();
     this.initCamera();
-    this.initHelper();
+    import.meta.env.MODE === "development" && this.initHelper();
   }
 
   camera: THREE.OrthographicCamera;
@@ -27,7 +27,7 @@ export default class Core {
 
   initCamera = () => {
     this.camera.position.set(-200, 200, 200);
-    this.camera.lookAt(0,0,0)
+    this.camera.lookAt(0, 0, 0);
 
     // 更新摄像机投影矩阵。在任何参数被改变以后必须被调用。
     this.camera.updateProjectionMatrix();
@@ -79,9 +79,9 @@ export default class Core {
 
   initHelper = () => {
     // 辅助对象
-    const cameraHelper = new THREE.CameraHelper(this.camera)
-    this.scene.add(cameraHelper)
-    
+    const cameraHelper = new THREE.CameraHelper(this.camera);
+    this.scene.add(cameraHelper);
+
     // 坐标轴
     const axes = new THREE.AxesHelper(100);
     this.scene.add(axes);

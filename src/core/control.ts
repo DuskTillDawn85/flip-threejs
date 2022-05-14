@@ -47,7 +47,7 @@ export default class Control {
   };
 
   keyupHandler = (e: KeyboardEvent) => {
-    if (e.key !== " ") return;
+    if (e.key !== " " || this.isJumping) return;
 
     // Set speed
     this.speedY = (performance.now() - this.keydownTime) / 2000;
