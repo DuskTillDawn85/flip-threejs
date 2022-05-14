@@ -11,7 +11,7 @@ export default class Block {
   }
 
   block = new THREE.Mesh();
-  blocks: Array<THREE.Mesh> = [];
+  blocks: THREE.Mesh[] = [];
   scene: THREE.Scene;
   camera: THREE.OrthographicCamera;
   cameraPos = {
@@ -30,7 +30,10 @@ export default class Block {
       this.block.position.set(lastPos.x, lastPos.y, lastPos.z);
 
       // update position for new block
-      Math.random() > 0.5 ? (this.block.position.z -= 10) : (this.block.position.x += 10);
+      const distance = 5 + Math.random() * 10;
+      Math.random() > 0.5
+        ? (this.block.position.z -= distance)
+        : (this.block.position.x += distance);
     }
 
     this.blocks.push(this.block);
@@ -38,7 +41,11 @@ export default class Block {
     this.blocks.length > 1 && this.updateCameraPos();
 
     // Remove redundant block
-    // if(this.blocks.length > 6) this.scene.remove(this.block)
+    if (this.blocks.length > 6) {
+      const mesh = this.blocks.shift();
+      mesh!.geometry.dispose();
+      this.scene.remove(mesh!);
+    }
   };
 
   private updateCameraPos = () => {

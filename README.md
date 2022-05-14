@@ -16,7 +16,7 @@
 ### 确定小人的跳跃方向 ⛳
 经观察和实验发现游戏中小人的跳跃方向并不始终是**水平**或**垂直**的，需要根据当前的落点和下一个格子的中心点不断调整跳跃方向，示意图如下：
 
-![跳跃方向](src/assets/img/jump-directrion.jpg)
+![跳跃方向](src/assets/img/jump.png)
 
 ## 功能结构
 ![功能结构图](src/assets/img/struct.png)

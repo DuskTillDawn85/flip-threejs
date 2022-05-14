@@ -47,14 +47,14 @@ export default class Control {
   keyupHandler = (e: KeyboardEvent) => {
     if (e.key !== " ") return;
 
-    // Set initial vertical speed
+    // Set speed
     this.speedY = (performance.now() - this.keydownTime) / 2000;
-    this.keydownTime = 0;
 
     // Throttle
     if (this.speedY < 0.1) return;
 
     this.isJumping = true;
+    this.keydownTime = 0;
   };
 
   initEventListeners = () => {
@@ -66,7 +66,7 @@ export default class Control {
     const aPos = this.avatar.avatar.position;
     const bPos = this.block.blocks[this.block.blocks.length - 2].position;
 
-    // In the Air, keep moving
+
     if (aPos.y >= 1) {
       // set jump direction
       bPos.x === this.block.block.position.x ? (aPos.z -= this.speedX) : (aPos.x += this.speedX);
@@ -77,6 +77,7 @@ export default class Control {
       // On block, stop moving
       aPos.y = 1;
       this.isJumping = false;
+      this.speedOffset = 0;
 
       this.block.generateBlocks();
     }
@@ -84,5 +85,10 @@ export default class Control {
 
   update = () => {
     this.isJumping && this.setJumpFrame();
+  };
+
+  destroy = () => {
+    document.body.removeEventListener("keydown", this.keydownHandler);
+    document.body.removeEventListener("keyup", this.keyupHandler);
   };
 }
