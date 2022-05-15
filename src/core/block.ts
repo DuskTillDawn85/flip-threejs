@@ -1,7 +1,5 @@
 import * as THREE from "three";
 
-const BLOCK_SIZE: Array<number> = [4, 2, 4];
-
 export default class Block {
   constructor(scene: THREE.Scene, camera: THREE.OrthographicCamera) {
     this.scene = scene;
@@ -12,6 +10,7 @@ export default class Block {
 
   block = new THREE.Mesh();
   blocks: THREE.Mesh[] = [];
+  blockSize = 5;
   scene: THREE.Scene;
   camera: THREE.OrthographicCamera;
   cameraPos = {
@@ -20,7 +19,7 @@ export default class Block {
   };
 
   generateBlocks = () => {
-    const cubeG = new THREE.BoxGeometry(...BLOCK_SIZE);
+    const cubeG = new THREE.BoxGeometry(this.blockSize, 2, this.blockSize);
     const cubeM = new THREE.MeshPhongMaterial({ color: 0xbebebe });
     this.block = new THREE.Mesh(cubeG, cubeM);
     this.block.receiveShadow = this.block.castShadow = true;
@@ -30,7 +29,7 @@ export default class Block {
       this.block.position.set(lastPos.x, lastPos.y, lastPos.z);
 
       // update position for new block
-      const distance = 5 + Math.random() * 10;
+      const distance = 6 + Math.random() * 10;
       Math.random() > 0.5
         ? (this.block.position.z -= distance)
         : (this.block.position.x += distance);
@@ -101,4 +100,6 @@ export default class Block {
       });
     }
   };
+
+  getPosition = () => this.block.position;
 }

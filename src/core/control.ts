@@ -51,8 +51,8 @@ export default class Control {
 
     // Set speed
     this.speedY = (performance.now() - this.keydownTime) / 2000;
-    const aPos = this.avatar.avatar.position;
-    const bPos = this.block.block.position;
+    const aPos = this.avatar.getPosition();
+    const bPos = this.block.getPosition();
     this.jumpDirection =
       bPos.x === this.block.blocks[this.block.blocks.length - 2].position.x ? "left" : "right";
     this.speedOffset =
@@ -73,7 +73,7 @@ export default class Control {
   };
 
   private setJumpFrame = () => {
-    const aPos = this.avatar.avatar.position;
+    const aPos = this.avatar.getPosition();
 
     if (aPos.y >= 1) {
       // In the Air, keep moving
@@ -94,8 +94,31 @@ export default class Control {
       this.isJumping = false;
       this.speedOffset = 0;
 
-      this.block.generateBlocks();
+      this.checkGameState();
     }
+  };
+
+  private checkGameState = () => {
+    const halfLen = this.block.blockSize / 2;
+    const aPos = this.avatar.getPosition();
+    const bPos = this.block.getPosition();
+    const avatarSize = 3; // hard code avatar size for now!!!
+    const zDelta = Math.abs(aPos.z - bPos.z);
+    const xDelta = Math.abs(aPos.x - bPos.x);
+
+    if (zDelta > halfLen)
+      zDelta < avatarSize
+        ? aPos.z > bPos.z
+          ? this.avatar.fallFromEdge("z+")
+          : this.avatar.fallFromEdge("z-")
+        : this.avatar.fall();
+    else if (xDelta > halfLen)
+      xDelta < avatarSize
+        ? aPos.x > bPos.x
+          ? this.avatar.fallFromEdge("x+")
+          : this.avatar.fallFromEdge("x-")
+        : this.avatar.fall();
+    else this.block.generateBlocks();
   };
 
   update = () => {
