@@ -7,13 +7,16 @@
     <meta name="description" content="A wx-flip clone based on Three.js" />
     <title>Flip-Jump♟️ - Three.js</title>
   </head>
-  <style>
-    html,body {
-      margin: 0;
-      padding: 0;
-    }
-  </style>
+
   <body>
+    <main>
+      <h2>分数：<span class="score">0</span></h2>
+    </main>
+    <div class="overlay">
+      <h1>您的得分</h1>
+      <p class="score">0</p>
+      <span id="restart">再来一次</span>
+    </div>
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>

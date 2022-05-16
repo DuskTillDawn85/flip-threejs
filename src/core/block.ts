@@ -101,5 +101,17 @@ export default class Block {
     }
   };
 
+  reset = () => {
+    const len = this.blocks.length;
+    for (let i = 0; i < len; i++) {
+      const block = this.blocks.pop();
+      block?.geometry.dispose();
+      this.scene.remove(block!);
+    }
+    this.cameraPos.current = new THREE.Vector3();
+    this.generateBlocks();
+    this.generateBlocks(); // it takes two :)
+  };
+
   getPosition = () => this.block.position;
 }

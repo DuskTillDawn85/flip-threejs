@@ -18,9 +18,7 @@ export default class Avatar {
   initAvatar = () => {
     this.loader.load(avatarUrl, glb => {
       this.avatar = glb.scene.children[0];
-      this.avatar.position.set(0, 1, 0);
-      this.avatar.rotation.set(0, Math.PI / 2, 0);
-      this.avatar.scale.set(2, 2, 2);
+      this.reset();
 
       if (import.meta.env.MODE === "development") {
         const gui = new dat.GUI();
@@ -85,11 +83,18 @@ export default class Avatar {
   };
 
   fall = () => {
-    if (this.avatar.position.y <= 0) return alert("失败！");
+    if (this.avatar.position.y <= 0) return;
 
-    this.avatar.position.y -= 0.01;
+    this.avatar.position.y -= 0.05;
     requestAnimationFrame(() => this.fall());
   };
 
+  reset = () => {
+    this.avatar.position.set(0, 1, 0);
+    this.avatar.rotation.set(0, Math.PI / 2, 0);
+    this.avatar.scale.set(2, 2, 2);
+  };
+
   getPosition = () => this.avatar.position;
+  setPosition = (x: number, y: number, z: number) => this.avatar.position.set(x, y, z);
 }

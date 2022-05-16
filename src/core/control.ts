@@ -2,12 +2,6 @@ import * as THREE from "three";
 import Avatar from "./avatar";
 import Block from "./block";
 
-enum Result {
-  success = "block", // success, continue
-  edge = "edge", // on the edge of block
-  blank = "blank", // falling on the ground
-}
-
 export default class Control {
   constructor(
     scene: THREE.Scene,
@@ -37,6 +31,16 @@ export default class Control {
   speedY = 0; // Vertical Speed
   speedOffset = 0;
   jumpDirection = "";
+
+  // callback fn passed from outside
+  successCallback: Function | undefined;
+  failedCallback: Function | undefined;
+  setSuccessCallback(fn: Function) {
+    this.successCallback = fn;
+  }
+  setFailedCallback(fn: Function) {
+    this.failedCallback = fn;
+  }
 
   keydownHandler = (e: KeyboardEvent) => {
     if (e.key !== " " || this.isJumping) return;
@@ -106,27 +110,39 @@ export default class Control {
     const zDelta = Math.abs(aPos.z - bPos.z);
     const xDelta = Math.abs(aPos.x - bPos.x);
 
-    if (zDelta > halfLen)
+    if (zDelta > halfLen) {
       zDelta < avatarSize
         ? aPos.z > bPos.z
           ? this.avatar.fallFromEdge("z+")
           : this.avatar.fallFromEdge("z-")
         : this.avatar.fall();
-    else if (xDelta > halfLen)
+      this.failedCallback!();
+    } else if (xDelta > halfLen) {
       xDelta < avatarSize
         ? aPos.x > bPos.x
           ? this.avatar.fallFromEdge("x+")
           : this.avatar.fallFromEdge("x-")
         : this.avatar.fall();
-    else this.block.generateBlocks();
+      this.failedCallback!();
+    } else {
+      this.block.generateBlocks();
+      this.successCallback!();
+    }
+  };
+
+  restart = () => {
+    this.block.reset();
+    this.avatar.reset();
+
+    this.camera.lookAt(0, 0, 0);
   };
 
   update = () => {
     this.isJumping && this.setJumpFrame();
   };
 
-  destroy = () => {
-    document.body.removeEventListener("keydown", this.keydownHandler);
-    document.body.removeEventListener("keyup", this.keyupHandler);
-  };
+  // private destroy = () => {
+  //   document.body.removeEventListener("keydown", this.keydownHandler);
+  //   document.body.removeEventListener("keyup", this.keyupHandler);
+  // };
 }
