@@ -69,8 +69,8 @@ export default class Core {
     this.renderer.setClearColor(0x282828);
     document.body.appendChild(this.renderer.domElement);
 
-    // show Realtime FPS
-    document.body.append(this.stats.domElement);
+    // show Realtime FPS (in dev mode)
+    import.meta.env.MODE === "development" && document.body.append(this.stats.domElement);
 
     window.addEventListener("resize", () => {
       this.renderer.setSize(window.innerWidth, window.innerHeight);

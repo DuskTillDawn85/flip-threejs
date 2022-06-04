@@ -56,3 +56,4 @@ if (this.jumpDirection === "left") {
 ![功能结构图](src/assets/img/struct.png)
 
 Cheers 🍻
+
