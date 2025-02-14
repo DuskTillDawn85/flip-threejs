@@ -5,3 +5,4 @@
 **Online Preview： [https://dusktilldawn85.github.io/flip-threejs/](https://dusktilldawn85.github.io/flip-threejs/)**
 
 ## Key Point
+![原理](src/assets/img/jump.png)

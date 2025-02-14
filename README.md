@@ -55,5 +55,7 @@ if (this.jumpDirection === "left") {
 ## 功能结构
 ![功能结构图](src/assets/img/struct.png)
 
-Cheers 🍻
+原理示意：
+![原理](src/assets/img/jump.png)
 
+Cheers 🍻
