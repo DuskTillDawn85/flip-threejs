@@ -11,6 +11,7 @@ export default class Block {
   block = new THREE.Mesh();
   blocks: THREE.Mesh[] = [];
   blockSize = 5;
+  private blockHeight = 2;
   scene: THREE.Scene;
   camera: THREE.OrthographicCamera;
   cameraPos = {
@@ -18,11 +19,37 @@ export default class Block {
     next: new THREE.Vector3(),
   };
 
+  private createBlockMesh = () => {
+    const isCylinder = Math.random() > 0.5;
+    const geometry = isCylinder
+      ? new THREE.CylinderGeometry(this.blockSize / 2, this.blockSize / 2, this.blockHeight, 32)
+      : new THREE.BoxGeometry(this.blockSize, this.blockHeight, this.blockSize);
+
+    const material = new THREE.MeshPhongMaterial({ color: 0xbebebe });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.receiveShadow = mesh.castShadow = true;
+    mesh.userData.shape = isCylinder ? "cylinder" : "box";
+    mesh.userData.size = this.blockSize;
+    mesh.userData.height = this.blockHeight;
+    if (isCylinder) {
+      mesh.userData.radius = this.blockSize / 2;
+    }
+    return mesh;
+  };
+
+  private disposeMesh = (mesh: THREE.Mesh) => {
+    mesh.geometry.dispose();
+    const material = mesh.material;
+    if (Array.isArray(material)) {
+      material.forEach(m => m.dispose());
+    } else {
+      material.dispose();
+    }
+    this.scene.remove(mesh);
+  };
+
   generateBlocks = () => {
-    const cubeG = new THREE.BoxGeometry(this.blockSize, 2, this.blockSize);
-    const cubeM = new THREE.MeshPhongMaterial({ color: 0xbebebe });
-    this.block = new THREE.Mesh(cubeG, cubeM);
-    this.block.receiveShadow = this.block.castShadow = true;
+    this.block = this.createBlockMesh();
 
     if (this.blocks.length) {
       const lastPos = this.blocks[this.blocks.length - 1].position;
@@ -42,8 +69,7 @@ export default class Block {
     // Remove redundant block
     if (this.blocks.length > 6) {
       const mesh = this.blocks.shift();
-      mesh!.geometry.dispose();
-      this.scene.remove(mesh!);
+      mesh && this.disposeMesh(mesh);
     }
   };
 
@@ -105,8 +131,7 @@ export default class Block {
     const len = this.blocks.length;
     for (let i = 0; i < len; i++) {
       const block = this.blocks.pop();
-      block?.geometry.dispose();
-      this.scene.remove(block!);
+      block && this.disposeMesh(block);
     }
     this.cameraPos.current = new THREE.Vector3();
     this.generateBlocks();

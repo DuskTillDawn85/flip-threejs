@@ -103,13 +103,39 @@ export default class Control {
   };
 
   private checkGameState = () => {
-    const halfLen = this.block.blockSize / 2;
     const aPos = this.avatar.getPosition();
     const bPos = this.block.getPosition();
     const avatarSize = 3; // hard code avatar size for now!!!
+    const currentBlock = this.block.blocks[this.block.blocks.length - 1];
+    const shape = currentBlock?.userData?.shape as string | undefined;
     const zDelta = Math.abs(aPos.z - bPos.z);
     const xDelta = Math.abs(aPos.x - bPos.x);
 
+    if (shape === "cylinder") {
+      const radius = (currentBlock?.userData?.radius as number | undefined) ?? this.block.blockSize / 2;
+      const dx = aPos.x - bPos.x;
+      const dz = aPos.z - bPos.z;
+      const distance = Math.sqrt(dx * dx + dz * dz);
+
+      if (distance > radius) {
+        if (distance < radius + avatarSize) {
+          if (Math.abs(dx) > Math.abs(dz)) {
+            this.avatar.fallFromEdge(dx > 0 ? "x+" : "x-");
+          } else {
+            this.avatar.fallFromEdge(dz > 0 ? "z+" : "z-");
+          }
+        } else {
+          this.avatar.fall();
+        }
+        this.failedCallback!();
+      } else {
+        this.block.generateBlocks();
+        this.successCallback!();
+      }
+      return;
+    }
+
+    const halfLen = this.block.blockSize / 2;
     if (zDelta > halfLen) {
       zDelta < avatarSize
         ? aPos.z > bPos.z
