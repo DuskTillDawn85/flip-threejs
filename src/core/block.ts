@@ -19,13 +19,20 @@ export default class Block {
     next: new THREE.Vector3(),
   };
 
+  private getRandomBrightColor = () => {
+    const hue = Math.random();
+    const saturation = 0.45 + Math.random() * 0.35;
+    const lightness = 0.65 + Math.random() * 0.2;
+    return new THREE.Color().setHSL(hue, saturation, lightness);
+  };
+
   private createBlockMesh = () => {
     const isCylinder = Math.random() > 0.5;
     const geometry = isCylinder
       ? new THREE.CylinderGeometry(this.blockSize / 2, this.blockSize / 2, this.blockHeight, 32)
       : new THREE.BoxGeometry(this.blockSize, this.blockHeight, this.blockSize);
 
-    const material = new THREE.MeshPhongMaterial({ color: 0xbebebe });
+    const material = new THREE.MeshPhongMaterial({ color: this.getRandomBrightColor() });
     const mesh = new THREE.Mesh(geometry, material);
     mesh.receiveShadow = mesh.castShadow = true;
     mesh.userData.shape = isCylinder ? "cylinder" : "box";
