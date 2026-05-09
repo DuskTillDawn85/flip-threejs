@@ -31,7 +31,7 @@ jobs:
         env:
           base_branch: main
         with:
-          token: ${{ secrets.THREE }}
+          token: ${{ secrets.FLIP_SECRET }}
           branch: gh-pages
           folder: dist
           clean: true
