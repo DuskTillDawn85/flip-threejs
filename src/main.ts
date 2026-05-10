@@ -5,6 +5,7 @@ import Core from "./core";
 import Block from "./core/block";
 import Avatar from "./core/avatar";
 import Control from "./core/control";
+import perfectUrl from "./assets/media/perfect.mp3?url";
 
 const core = new Core();
 const camera = core.camera;
@@ -18,6 +19,17 @@ const control = new Control(scene, camera, renderer, avatar, block);
 
 // UI
 let score = 0;
+const perfectAudio = new Audio(perfectUrl);
+perfectAudio.volume = 0.7;
+
+const playAudio = (audio: HTMLAudioElement) => {
+  audio.currentTime = 0;
+  const result = audio.play();
+  if (result) {
+    result.catch(() => undefined);
+  }
+};
+
 document.querySelector("#restart")?.addEventListener("click", () => {
   control.restart();
   score = 0;
@@ -56,6 +68,7 @@ const updateScore = (points: number) => {
   block.setScore(score);
   scoreDoms.forEach(dom => (dom.textContent = score.toString()));
   showScoreFloat(points);
+  points === 3 && playAudio(perfectAudio);
 };
 const failedCallback = () => {
   overlay?.classList.add("active");
