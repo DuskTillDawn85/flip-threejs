@@ -77,6 +77,7 @@ export default class Avatar {
 
   reset = () => {
     const height = (this.avatar.userData.height as number | undefined) ?? 2;
+    this.avatar.scale.set(1, 1, 1);
     this.avatar.position.set(0, 1 + height / 2, 0);
     this.avatar.rotation.set(0, Math.PI / 2, 0);
   };

@@ -36,6 +36,9 @@ export default class Control {
   speedY = 0; // Vertical Speed
   speedOffset = 0;
   jumpDirection = "";
+  private maxChargeMs = 900;
+  private minChargeScaleY = 0.6;
+  private maxChargeScaleXZ = 1.18;
 
   private chargeAudio = new Audio(chargeUrl);
   private dieAudio = new Audio(dieUrl);
@@ -53,10 +56,26 @@ export default class Control {
     audio.currentTime = 0;
   };
 
+  private setAvatarScaleForChargeProgress = (progress01: number) => {
+    const t = Math.max(0, Math.min(1, progress01));
+    const scaleY = 1 - (1 - this.minChargeScaleY) * t;
+    const scaleXZ = 1 + (this.maxChargeScaleXZ - 1) * t;
+    const mesh = this.avatar.avatar;
+    mesh.scale.set(scaleXZ, scaleY, scaleXZ);
+    mesh.position.y = this.getStandY();
+  };
+
+  private resetAvatarScale = () => {
+    const mesh = this.avatar.avatar;
+    mesh.scale.set(1, 1, 1);
+    mesh.position.y = this.getStandY();
+  };
+
   private getStandY = () => {
     const currentBlock = this.block.blocks[this.block.blocks.length - 1];
     const blockHeight = (currentBlock?.userData?.height as number | undefined) ?? 2;
-    const avatarHeight = (this.avatar.avatar?.userData?.height as number | undefined) ?? 2;
+    const avatarBaseHeight = (this.avatar.avatar?.userData?.height as number | undefined) ?? 2;
+    const avatarHeight = avatarBaseHeight * this.avatar.avatar.scale.y;
     const blockY = currentBlock?.position?.y ?? 0;
     return blockY + blockHeight / 2 + avatarHeight / 2;
   };
@@ -84,6 +103,7 @@ export default class Control {
     if (e.key !== " " || this.isJumping) return;
 
     this.stopAudio(this.chargeAudio);
+    this.resetAvatarScale();
 
     // Set speed
     this.speedY = (performance.now() - this.keydownTime) / 2000;
@@ -204,6 +224,11 @@ export default class Control {
   };
 
   update = () => {
+    if (!this.isJumping && this.keydownTime !== 0) {
+      const duration = performance.now() - this.keydownTime;
+      const progress01 = duration / this.maxChargeMs;
+      this.setAvatarScaleForChargeProgress(progress01);
+    }
     this.isJumping && this.setJumpFrame();
   };
 
