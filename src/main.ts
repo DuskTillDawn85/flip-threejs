@@ -36,6 +36,7 @@ document.querySelector("#restart")?.addEventListener("click", () => {
   block.setScore(score);
   overlay?.classList.remove("active");
   scoreDoms.forEach(dom => (dom.textContent = "0"));
+  (document.activeElement as HTMLElement | null)?.blur();
 });
 const overlay = document.querySelector(".overlay");
 const scoreDoms = document.querySelectorAll(".score");

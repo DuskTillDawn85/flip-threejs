@@ -8,6 +8,16 @@ export default class Avatar {
 
   scene: THREE.Scene;
   avatar: THREE.Mesh = new THREE.Mesh();
+  private animToken = 0;
+  private rafId: number | undefined;
+
+  private stopAnimation = () => {
+    this.animToken += 1;
+    if (this.rafId !== undefined) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = undefined;
+    }
+  };
 
   initAvatar = () => {
     const radius = 0.7;
@@ -30,52 +40,68 @@ export default class Avatar {
    * z- -1 1 0
    */
   fallFromEdge = (direction: string) => {
+    this.stopAnimation();
+    const token = this.animToken;
     const rotation = this.avatar.rotation;
 
-    switch (direction) {
-      case "x+":
-        if (rotation.y <= 0) return;
+    const step = () => {
+      if (token !== this.animToken) return;
 
-        rotation.x += 0.05;
-        rotation.y -= 0.05;
-        rotation.z -= 0.05;
-        this.avatar.rotation.set(rotation.x, rotation.y, rotation.z);
-        break;
-      case "x-":
-        if (rotation.y <= 0) return;
+      switch (direction) {
+        case "x+":
+          if (rotation.y <= 0) return;
 
-        rotation.x -= 0.05;
-        rotation.y -= 0.05;
-        rotation.z += 0.05;
-        this.avatar.rotation.set(rotation.x, rotation.y, rotation.z);
-        break;
-      case "z+":
-        if (rotation.x >= Math.PI / 2) return;
+          rotation.x += 0.05;
+          rotation.y -= 0.05;
+          rotation.z -= 0.05;
+          this.avatar.rotation.set(rotation.x, rotation.y, rotation.z);
+          break;
+        case "x-":
+          if (rotation.y <= 0) return;
 
-        rotation.x += 0.05;
-        this.avatar.rotation.set(rotation.x, rotation.y, rotation.z);
-        break;
-      case "z-":
-        if (rotation.x <= -Math.PI / 2) return;
+          rotation.x -= 0.05;
+          rotation.y -= 0.05;
+          rotation.z += 0.05;
+          this.avatar.rotation.set(rotation.x, rotation.y, rotation.z);
+          break;
+        case "z+":
+          if (rotation.x >= Math.PI / 2) return;
 
-        rotation.x -= 0.05;
-        this.avatar.rotation.set(rotation.x, rotation.y, rotation.z);
-        break;
-    }
+          rotation.x += 0.05;
+          this.avatar.rotation.set(rotation.x, rotation.y, rotation.z);
+          break;
+        case "z-":
+          if (rotation.x <= -Math.PI / 2) return;
 
-    // Update
-    this.avatar.position.y -= 0.05;
-    requestAnimationFrame(() => this.fallFromEdge(direction));
+          rotation.x -= 0.05;
+          this.avatar.rotation.set(rotation.x, rotation.y, rotation.z);
+          break;
+      }
+
+      this.avatar.position.y -= 0.05;
+      this.rafId = requestAnimationFrame(step);
+    };
+
+    step();
   };
 
   fall = () => {
-    if (this.avatar.position.y <= 0) return;
+    this.stopAnimation();
+    const token = this.animToken;
 
-    this.avatar.position.y -= 0.05;
-    requestAnimationFrame(() => this.fall());
+    const step = () => {
+      if (token !== this.animToken) return;
+      if (this.avatar.position.y <= 0) return;
+
+      this.avatar.position.y -= 0.05;
+      this.rafId = requestAnimationFrame(step);
+    };
+
+    step();
   };
 
   reset = () => {
+    this.stopAnimation();
     const height = (this.avatar.userData.height as number | undefined) ?? 2;
     this.avatar.scale.set(1, 1, 1);
     this.avatar.position.set(0, 1 + height / 2, 0);

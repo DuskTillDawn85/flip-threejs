@@ -39,6 +39,11 @@ export default class Control {
   private maxChargeMs = 900;
   private minChargeScaleY = 0.6;
   private maxChargeScaleXZ = 1.18;
+  private bounceStartMs = 0;
+  private bounceFromScaleY = 1;
+  private bounceFromScaleXZ = 1;
+  private bounceDamping = 12;
+  private bounceAngular = 22;
 
   private chargeAudio = new Audio(chargeUrl);
   private dieAudio = new Audio(dieUrl);
@@ -65,17 +70,55 @@ export default class Control {
     mesh.position.y = this.getStandY();
   };
 
-  private resetAvatarScale = () => {
+  private setAvatarScaleImmediate = (scaleXZ: number, scaleY: number) => {
     const mesh = this.avatar.avatar;
-    mesh.scale.set(1, 1, 1);
-    mesh.position.y = this.getStandY();
+    mesh.scale.set(scaleXZ, scaleY, scaleXZ);
+    if (!this.isJumping) {
+      mesh.position.y = this.getStandY();
+    }
+  };
+
+  private startBounceToNormalScale = () => {
+    const mesh = this.avatar.avatar;
+    this.bounceStartMs = performance.now();
+    this.bounceFromScaleY = mesh.scale.y;
+    this.bounceFromScaleXZ = mesh.scale.x;
+  };
+
+  private updateBounceScale = () => {
+    if (this.bounceStartMs === 0) return;
+
+    const elapsedMs = performance.now() - this.bounceStartMs;
+    const t = elapsedMs / 1000;
+    const amplitude = Math.exp(-this.bounceDamping * t);
+
+    if (elapsedMs > 420 || amplitude < 0.02) {
+      this.bounceStartMs = 0;
+      this.setAvatarScaleImmediate(1, 1);
+      return;
+    }
+
+    const w = this.bounceAngular;
+    const cos = Math.cos(w * t);
+    const scaleY = Math.max(0.2, 1 + (this.bounceFromScaleY - 1) * amplitude * cos);
+    const scaleXZ = Math.max(0.2, 1 + (this.bounceFromScaleXZ - 1) * amplitude * cos);
+    this.setAvatarScaleImmediate(scaleXZ, scaleY);
+  };
+
+  private getBaseStandY = () => {
+    const currentBlock = this.block.blocks[this.block.blocks.length - 1];
+    const blockHeight = (currentBlock?.userData?.height as number | undefined) ?? 2;
+    const avatarBaseHeight = (this.avatar.avatar?.userData?.height as number | undefined) ?? 2;
+    const blockY = currentBlock?.position?.y ?? 0;
+    return blockY + blockHeight / 2 + avatarBaseHeight / 2;
   };
 
   private getStandY = () => {
     const currentBlock = this.block.blocks[this.block.blocks.length - 1];
     const blockHeight = (currentBlock?.userData?.height as number | undefined) ?? 2;
     const avatarBaseHeight = (this.avatar.avatar?.userData?.height as number | undefined) ?? 2;
-    const avatarHeight = avatarBaseHeight * this.avatar.avatar.scale.y;
+    const scaleY = this.isJumping ? 1 : this.avatar.avatar.scale.y;
+    const avatarHeight = avatarBaseHeight * scaleY;
     const blockY = currentBlock?.position?.y ?? 0;
     return blockY + blockHeight / 2 + avatarHeight / 2;
   };
@@ -91,6 +134,9 @@ export default class Control {
   }
 
   keydownHandler = (e: KeyboardEvent) => {
+    if (e.key === " ") {
+      e.preventDefault();
+    }
     if (e.key !== " " || this.isJumping) return;
 
     if (this.keydownTime == 0) {
@@ -100,13 +146,18 @@ export default class Control {
   };
 
   keyupHandler = (e: KeyboardEvent) => {
+    if (e.key === " ") {
+      e.preventDefault();
+    }
     if (e.key !== " " || this.isJumping) return;
 
     this.stopAudio(this.chargeAudio);
-    this.resetAvatarScale();
+    const pressDuration = performance.now() - this.keydownTime;
+    this.keydownTime = 0;
+    this.speedY = pressDuration / 2000;
+    this.startBounceToNormalScale();
 
     // Set speed
-    this.speedY = (performance.now() - this.keydownTime) / 2000;
     const aPos = this.avatar.getPosition();
     const bPos = this.block.getPosition();
     this.jumpDirection =
@@ -119,8 +170,8 @@ export default class Control {
     // Throttle
     if (this.speedY < 0.1) return;
 
+    aPos.y = this.getBaseStandY();
     this.isJumping = true;
-    this.keydownTime = 0;
   };
 
   initEventListeners = () => {
@@ -230,6 +281,14 @@ export default class Control {
 
   restart = () => {
     this.stopAudio(this.chargeAudio);
+    this.stopAudio(this.dieAudio);
+    this.isJumping = false;
+    this.keydownTime = 0;
+    this.speedY = 0;
+    this.speedOffset = 0;
+    this.jumpDirection = "";
+    this.bounceStartMs = 0;
+    this.setAvatarScaleImmediate(1, 1);
     this.block.reset();
     this.avatar.reset();
 
@@ -242,6 +301,7 @@ export default class Control {
       const progress01 = duration / this.maxChargeMs;
       this.setAvatarScaleForChargeProgress(progress01);
     }
+    this.updateBounceScale();
     this.isJumping && this.setJumpFrame();
   };
 

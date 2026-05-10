@@ -12,7 +12,7 @@ export default class Core {
       5000
     );
     this.scene = new THREE.Scene();
-    this.renderer = new THREE.WebGLRenderer();
+    this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     this.stats = Stats();
     this.initScene();
     this.initRenderer();
@@ -64,7 +64,7 @@ export default class Core {
 
     // Ground (for shadow receiver)
     const planeG = new THREE.PlaneGeometry(2000, 2000);
-    const planeM = new THREE.MeshLambertMaterial({ color: 0x666666 });
+    const planeM = new THREE.ShadowMaterial({ opacity: 0.25 });
     const plane = new THREE.Mesh(planeG, planeM);
     plane.rotation.x = -Math.PI / 2;
     plane.position.y = -1;
@@ -76,7 +76,7 @@ export default class Core {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true; // 启用阴影
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.renderer.setClearColor(0x666666);
+    this.renderer.setClearColor(0x000000, 0);
     document.body.appendChild(this.renderer.domElement);
 
     // show Realtime FPS (in dev mode)

@@ -19,6 +19,8 @@ export default class Block {
     current: new THREE.Vector3(),
     next: new THREE.Vector3(),
   };
+  private cameraAnimToken = 0;
+  private cameraRafId: number | undefined;
 
   setScore = (score: number) => {
     this.score = Number.isFinite(score) ? Math.max(0, Math.floor(score)) : 0;
@@ -156,6 +158,13 @@ export default class Block {
   currentX = 0;
   currentZ = 0;
   private updateCamera = () => {
+    this.cameraAnimToken += 1;
+    const token = this.cameraAnimToken;
+    if (this.cameraRafId !== undefined) {
+      cancelAnimationFrame(this.cameraRafId);
+      this.cameraRafId = undefined;
+    }
+
     // 小人当前站的格子
     this.currentX = this.cameraPos.current.x;
     this.currentZ = this.cameraPos.current.z;
@@ -164,29 +173,42 @@ export default class Block {
     const nextX = this.cameraPos.next.x;
     const nextZ = this.cameraPos.next.z;
 
-    if (this.currentX < nextX || this.currentZ > nextZ) {
-      this.currentX < nextX && (this.currentX += 0.1);
-      this.currentZ > nextZ && (this.currentZ -= 0.1);
-      if (Math.abs(this.currentX - nextX) < 0.1) {
-        this.currentX = nextX;
-      }
-      if (Math.abs(this.currentZ - nextZ) < 0.1) {
-        this.currentZ = nextZ;
-      }
-      this.camera.lookAt(new THREE.Vector3(this.currentX, 0, this.currentZ));
-      this.cameraPos.current.x = this.currentX;
-      this.cameraPos.current.z = this.currentZ;
+    const step = () => {
+      if (token !== this.cameraAnimToken) return;
 
-      // don't know is useful or not...
-      this.camera.updateProjectionMatrix();
+      this.currentX = this.cameraPos.current.x;
+      this.currentZ = this.cameraPos.current.z;
 
-      requestAnimationFrame(() => {
-        this.updateCamera();
-      });
-    }
+      if (this.currentX < nextX || this.currentZ > nextZ) {
+        this.currentX < nextX && (this.currentX += 0.1);
+        this.currentZ > nextZ && (this.currentZ -= 0.1);
+        if (Math.abs(this.currentX - nextX) < 0.1) {
+          this.currentX = nextX;
+        }
+        if (Math.abs(this.currentZ - nextZ) < 0.1) {
+          this.currentZ = nextZ;
+        }
+        this.camera.lookAt(new THREE.Vector3(this.currentX, 0, this.currentZ));
+        this.cameraPos.current.x = this.currentX;
+        this.cameraPos.current.z = this.currentZ;
+
+        this.camera.updateProjectionMatrix();
+        this.cameraRafId = requestAnimationFrame(step);
+      } else {
+        this.cameraRafId = undefined;
+      }
+    };
+
+    step();
   };
 
   reset = () => {
+    this.cameraAnimToken += 1;
+    if (this.cameraRafId !== undefined) {
+      cancelAnimationFrame(this.cameraRafId);
+      this.cameraRafId = undefined;
+    }
+
     const len = this.blocks.length;
     for (let i = 0; i < len; i++) {
       const block = this.blocks.pop();

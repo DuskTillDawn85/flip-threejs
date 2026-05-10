@@ -3,65 +3,142 @@ body {
     margin: 0;
     padding: 0;
     position: relative;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "PingFang SC",
+        "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+    color: #111;
+    background: linear-gradient(180deg, #d8edf4 0%, #bddbc1 100%);
 
     main {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        text-align: center;
-        color: #222;
+        position: fixed;
+        top: 18px;
+        left: 50%;
+        transform: translateX(-50%);
         z-index: 10;
+        width: min(720px, calc(100vw - 24px));
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
+    }
+
+    .hud-score-only {
+        pointer-events: none;
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+        backdrop-filter: blur(10px);
+        min-width: 84px;
+        text-align: center;
+
+        .score {
+            font-family: ui-rounded, "SF Pro Rounded", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 0.8px;
+            color: rgba(15, 23, 42, 0.95);
+            font-variant-numeric: tabular-nums;
+        }
     }
 
     .overlay {
-        position: absolute;
-        top: 40%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border-radius: 15px;
-        width: 600px;
-        height: 600px;
-        background-color: #494949f5;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        text-align: center;
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
         opacity: 0;
         z-index: 20;
+        pointer-events: none;
+        background: rgba(15, 23, 42, 0.0);
 
         &.active {
             opacity: 1;
-            transition: 0.3s;
-            top: 50%;
+            transition: 0.18s ease-out;
+            pointer-events: auto;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(6px);
         }
+    }
 
-        p {
-            font-size: 64px;
-            color: #ddd;
-        }
+    .overlay-card {
+        width: min(420px, calc(100vw - 28px));
+        padding: 22px 18px 18px;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 28px 80px rgba(15, 23, 42, 0.35);
+        text-align: center;
+        transform: translateY(10px) scale(0.98);
+        transition: transform 0.18s ease-out;
+    }
 
-        span {
-            border: 1px solid #ddd;
-            outline: none;
-            color: #eee;
-            background-color: transparent;
-            border-radius: 15px;
-            border-color: #eee;
-            width: 50%;
-            line-height: 80px;
-            font-size: 32px;
-        }
+    .overlay.active .overlay-card {
+        transform: translateY(0) scale(1);
+    }
+
+    .overlay-title {
+        font-size: 18px;
+        font-weight: 900;
+        letter-spacing: 1px;
+        color: rgba(15, 23, 42, 0.92);
+    }
+
+    .overlay-score {
+        margin-top: 16px;
+        padding: 16px 14px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.06), rgba(15, 23, 42, 0.03));
+        border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .overlay-score-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: rgba(15, 23, 42, 0.65);
+    }
+
+    .overlay-score .score {
+        margin-top: 6px;
+        font-size: 56px;
+        font-weight: 950;
+        letter-spacing: 1px;
+        color: rgba(15, 23, 42, 0.95);
+    }
+
+    #restart {
+        margin-top: 16px;
+        width: 100%;
+        height: 52px;
+        border-radius: 16px;
+        border: 1px solid rgba(15, 23, 42, 0.14);
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.85));
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 0.8px;
+        cursor: pointer;
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.22);
+        transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, filter 0.12s ease-out;
+    }
+
+    #restart:hover {
+        filter: brightness(1.05);
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.26);
+    }
+
+    #restart:active {
+        transform: translateY(1px);
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.22);
     }
 
     .score-float {
         position: fixed;
         z-index: 30;
         pointer-events: none;
-        font-size: 32px;
-        font-weight: 700;
-        color: #1f7a3f;
+        font-size: 28px;
+        font-weight: 900;
+        letter-spacing: 0.5px;
+        color: #f59e0b;
         text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
         animation: score-float-up 800ms ease-out forwards;
         will-change: transform, opacity;
