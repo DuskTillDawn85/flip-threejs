@@ -81,9 +81,9 @@ export default class Control {
   };
 
   // callback fn passed from outside
-  successCallback: Function | undefined;
+  successCallback: ((points: number) => void) | undefined;
   failedCallback: Function | undefined;
-  setSuccessCallback(fn: Function) {
+  setSuccessCallback(fn: (points: number) => void) {
     this.successCallback = fn;
   }
   setFailedCallback(fn: Function) {
@@ -164,6 +164,13 @@ export default class Control {
     const zDelta = Math.abs(aPos.z - bPos.z);
     const xDelta = Math.abs(aPos.x - bPos.x);
 
+    // 根据落点离中心距离计算得分（中心3分，附近2分，边缘1分）
+    const getLandingPoints = (ratio01: number) => {
+      if (ratio01 <= 0.2) return 3;
+      if (ratio01 <= 0.6) return 2;
+      return 1;
+    };
+
     if (shape === "cylinder") {
       const radius =
         (currentBlock?.userData?.radius as number | undefined) ?? this.block.blockSize / 2;
@@ -185,7 +192,9 @@ export default class Control {
         this.playAudio(this.dieAudio);
         this.failedCallback!();
       } else {
-        this.successCallback!();
+        const ratio01 = Math.min(1, distance / radius);
+        const points = getLandingPoints(ratio01);
+        this.successCallback!(points);
         this.block.generateBlocks();
       }
       return;
@@ -210,7 +219,11 @@ export default class Control {
       this.playAudio(this.dieAudio);
       this.failedCallback!();
     } else {
-      this.successCallback!();
+      const dx = Math.abs(aPos.x - bPos.x);
+      const dz = Math.abs(aPos.z - bPos.z);
+      const ratio01 = Math.min(1, Math.max(dx, dz) / halfLen);
+      const points = getLandingPoints(ratio01);
+      this.successCallback!(points);
       this.block.generateBlocks();
     }
   };

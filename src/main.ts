@@ -27,10 +27,35 @@ document.querySelector("#restart")?.addEventListener("click", () => {
 });
 const overlay = document.querySelector(".overlay");
 const scoreDoms = document.querySelectorAll(".score");
-const updateScore = () => {
-  score += 1;
+
+const showScoreFloat = (points: number) => {
+  const currentBlock = block.blocks[block.blocks.length - 1];
+  if (!currentBlock) return;
+
+  const height = (currentBlock.userData.height as number | undefined) ?? 2;
+  const worldPos = currentBlock.position.clone();
+  worldPos.y += height / 2;
+
+  const ndc = worldPos.project(camera);
+  const rect = renderer.domElement.getBoundingClientRect();
+  const x = rect.left + (ndc.x * 0.5 + 0.5) * rect.width + 28;
+  const y = rect.top + (-ndc.y * 0.5 + 0.5) * rect.height - 18;
+
+  const el = document.createElement("div");
+  el.className = "score-float";
+  el.textContent = `+${points}`;
+  el.style.left = `${x}px`;
+  el.style.top = `${y}px`;
+
+  document.body.appendChild(el);
+  el.addEventListener("animationend", () => el.remove(), { once: true });
+};
+
+const updateScore = (points: number) => {
+  score += points;
   block.setScore(score);
   scoreDoms.forEach(dom => (dom.textContent = score.toString()));
+  showScoreFloat(points);
 };
 const failedCallback = () => {
   overlay?.classList.add("active");
