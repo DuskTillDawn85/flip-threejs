@@ -36,6 +36,7 @@ export default class Control {
   speedY = 0; // Vertical Speed
   speedOffset = 0;
   jumpDirection = "";
+  private chargeToSpeedDivisor = 2600;
   private maxChargeMs = 900;
   private minChargeScaleY = 0.6;
   private maxChargeScaleXZ = 1.18;
@@ -44,6 +45,10 @@ export default class Control {
   private bounceFromScaleXZ = 1;
   private bounceDamping = 12;
   private bounceAngular = 22;
+  private jumpFrameIndex = 0;
+  private jumpTotalFrames = 0;
+  private jumpStartQuat = new THREE.Quaternion();
+  private jumpAxis = new THREE.Vector3(1, 0, 0);
 
   private chargeAudio = new Audio(chargeUrl);
   private dieAudio = new Audio(dieUrl);
@@ -105,6 +110,19 @@ export default class Control {
     this.setAvatarScaleImmediate(scaleXZ, scaleY);
   };
 
+  private estimateJumpFrames = (initialVy: number, startY: number) => {
+    let y = startY;
+    let vy = initialVy;
+    let frames = 0;
+    for (let i = 0; i < 300; i++) {
+      y += vy;
+      vy -= 0.01;
+      frames += 1;
+      if (y <= startY && vy < 0) break;
+    }
+    return Math.max(1, frames);
+  };
+
   private getBaseStandY = () => {
     const currentBlock = this.block.blocks[this.block.blocks.length - 1];
     const blockHeight = (currentBlock?.userData?.height as number | undefined) ?? 2;
@@ -154,7 +172,7 @@ export default class Control {
     this.stopAudio(this.chargeAudio);
     const pressDuration = performance.now() - this.keydownTime;
     this.keydownTime = 0;
-    this.speedY = pressDuration / 2000;
+    this.speedY = pressDuration / this.chargeToSpeedDivisor;
     this.startBounceToNormalScale();
 
     // Set speed
@@ -171,6 +189,19 @@ export default class Control {
     if (this.speedY < 0.1) return;
 
     aPos.y = this.getBaseStandY();
+    this.jumpFrameIndex = 0;
+    this.jumpTotalFrames = this.estimateJumpFrames(this.speedY, aPos.y);
+    this.jumpStartQuat.copy(this.avatar.avatar.quaternion);
+    const dir = new THREE.Vector3(bPos.x - aPos.x, 0, bPos.z - aPos.z);
+    if (dir.lengthSq() > 0.000001) {
+      dir.normalize();
+      this.jumpAxis.crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
+      if (this.jumpAxis.lengthSq() < 0.000001) {
+        this.jumpAxis.set(1, 0, 0);
+      }
+    } else {
+      this.jumpAxis.set(1, 0, 0);
+    }
     this.isJumping = true;
   };
 
@@ -196,11 +227,22 @@ export default class Control {
       aPos.y += this.speedY;
 
       this.speedY -= 0.01; // Gravity
+
+      if (this.jumpTotalFrames > 0) {
+        const t = Math.min(1, this.jumpFrameIndex / this.jumpTotalFrames);
+        this.avatar.avatar.quaternion
+          .copy(this.jumpStartQuat)
+          .multiply(new THREE.Quaternion().setFromAxisAngle(this.jumpAxis, t * Math.PI * 2));
+        this.jumpFrameIndex += 1;
+      }
     } else {
       // On block, stop moving
       aPos.y = standY;
       this.isJumping = false;
       this.speedOffset = 0;
+      this.jumpTotalFrames = 0;
+      this.jumpFrameIndex = 0;
+      this.avatar.avatar.quaternion.copy(this.jumpStartQuat);
 
       this.checkGameState();
     }
@@ -287,6 +329,8 @@ export default class Control {
     this.speedY = 0;
     this.speedOffset = 0;
     this.jumpDirection = "";
+    this.jumpFrameIndex = 0;
+    this.jumpTotalFrames = 0;
     this.bounceStartMs = 0;
     this.setAvatarScaleImmediate(1, 1);
     this.block.reset();

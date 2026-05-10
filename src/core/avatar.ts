@@ -20,7 +20,7 @@ export default class Avatar {
   };
 
   initAvatar = () => {
-    const radius = 0.7;
+    const radius = 0.6;
     const height = 2;
     const geometry = new THREE.CylinderGeometry(radius, radius, height, 24);
     const material = new THREE.MeshStandardMaterial({ color: 0x3d3d3d });
