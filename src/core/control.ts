@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import Avatar from "./avatar";
 import Block from "./block";
+import chargeUrl from "../assets/media/charge.mp3?url";
+import dieUrl from "../assets/media/die.mp3?url";
 
 export default class Control {
   constructor(
@@ -15,6 +17,9 @@ export default class Control {
     this.renderer = renderer;
     this.avatar = avatar;
     this.block = block;
+    this.chargeAudio.loop = true;
+    this.chargeAudio.volume = 0.35;
+    this.dieAudio.volume = 0.6;
     this.initEventListeners();
   }
 
@@ -32,6 +37,22 @@ export default class Control {
   speedOffset = 0;
   jumpDirection = "";
 
+  private chargeAudio = new Audio(chargeUrl);
+  private dieAudio = new Audio(dieUrl);
+
+  private playAudio = (audio: HTMLAudioElement) => {
+    audio.currentTime = 0;
+    const result = audio.play();
+    if (result) {
+      result.catch(() => undefined);
+    }
+  };
+
+  private stopAudio = (audio: HTMLAudioElement) => {
+    audio.pause();
+    audio.currentTime = 0;
+  };
+
   // callback fn passed from outside
   successCallback: Function | undefined;
   failedCallback: Function | undefined;
@@ -47,11 +68,14 @@ export default class Control {
 
     if (this.keydownTime == 0) {
       this.keydownTime = performance.now();
+      this.playAudio(this.chargeAudio);
     }
   };
 
   keyupHandler = (e: KeyboardEvent) => {
     if (e.key !== " " || this.isJumping) return;
+
+    this.stopAudio(this.chargeAudio);
 
     // Set speed
     this.speedY = (performance.now() - this.keydownTime) / 2000;
@@ -128,6 +152,8 @@ export default class Control {
         } else {
           this.avatar.fall();
         }
+        this.stopAudio(this.chargeAudio);
+        this.playAudio(this.dieAudio);
         this.failedCallback!();
       } else {
         this.successCallback!();
@@ -144,6 +170,7 @@ export default class Control {
           ? this.avatar.fallFromEdge("z+")
           : this.avatar.fallFromEdge("z-")
         : this.avatar.fall();
+      this.playAudio(this.dieAudio);
       this.failedCallback!();
     } else if (xDelta > halfLen) {
       xDelta < avatarSize
@@ -151,6 +178,7 @@ export default class Control {
           ? this.avatar.fallFromEdge("x+")
           : this.avatar.fallFromEdge("x-")
         : this.avatar.fall();
+      this.playAudio(this.dieAudio);
       this.failedCallback!();
     } else {
       this.successCallback!();
@@ -159,6 +187,7 @@ export default class Control {
   };
 
   restart = () => {
+    this.stopAudio(this.chargeAudio);
     this.block.reset();
     this.avatar.reset();
 
