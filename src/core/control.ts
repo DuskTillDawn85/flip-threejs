@@ -8,7 +8,7 @@ export default class Control {
   constructor(
     scene: THREE.Scene,
     camera: THREE.OrthographicCamera,
-    renderer: THREE.Renderer,
+    renderer: THREE.WebGLRenderer,
     avatar: Avatar,
     block: Block
   ) {
@@ -25,7 +25,7 @@ export default class Control {
 
   scene: THREE.Scene;
   camera: THREE.OrthographicCamera;
-  renderer: THREE.Renderer;
+  renderer: THREE.WebGLRenderer;
   avatar: Avatar;
   block: Block;
 
@@ -37,7 +37,8 @@ export default class Control {
   speedOffset = 0;
   jumpDirection = "";
   private chargeToSpeedDivisor = 2600;
-  private maxChargeMs = 900;
+  private maxChargeMs = 900; // 最大蓄力时长
+  private minChargeMs = 300; // 最低蓄力时长
   private minChargeScaleY = 0.6;
   private maxChargeScaleXZ = 1.18;
   private bounceStartMs = 0;
@@ -49,6 +50,7 @@ export default class Control {
   private jumpTotalFrames = 0;
   private jumpStartQuat = new THREE.Quaternion();
   private jumpAxis = new THREE.Vector3(1, 0, 0);
+  private activePointerId: number | null = null;
 
   private chargeAudio = new Audio(chargeUrl);
   private dieAudio = new Audio(dieUrl);
@@ -151,23 +153,24 @@ export default class Control {
     this.failedCallback = fn;
   }
 
-  keydownHandler = (e: KeyboardEvent) => {
-    if (e.key === " ") {
-      e.preventDefault();
-    }
-    if (e.key !== " " || this.isJumping) return;
+  private beginCharge = () => {
+    if (this.isJumping) return;
+    if (this.keydownTime !== 0) return;
 
-    if (this.keydownTime == 0) {
-      this.keydownTime = performance.now();
-      this.playAudio(this.chargeAudio);
-    }
+    this.keydownTime = performance.now();
+    this.playAudio(this.chargeAudio);
   };
 
-  keyupHandler = (e: KeyboardEvent) => {
-    if (e.key === " ") {
-      e.preventDefault();
-    }
-    if (e.key !== " " || this.isJumping) return;
+  private cancelCharge = () => {
+    if (this.keydownTime === 0) return;
+    this.stopAudio(this.chargeAudio);
+    this.keydownTime = 0;
+    this.startBounceToNormalScale();
+  };
+
+  private endCharge = () => {
+    if (this.isJumping) return;
+    if (this.keydownTime === 0) return;
 
     this.stopAudio(this.chargeAudio);
     const pressDuration = performance.now() - this.keydownTime;
@@ -175,7 +178,8 @@ export default class Control {
     this.speedY = pressDuration / this.chargeToSpeedDivisor;
     this.startBounceToNormalScale();
 
-    // Set speed
+    if (pressDuration < this.minChargeMs) return;
+
     const aPos = this.avatar.getPosition();
     const bPos = this.block.getPosition();
     this.jumpDirection =
@@ -184,9 +188,6 @@ export default class Control {
       this.jumpDirection === "right"
         ? ((bPos.z - aPos.z) / (bPos.x - aPos.x)) * this.speedX
         : ((bPos.x - aPos.x) / (bPos.z - aPos.z)) * this.speedX;
-
-    // Throttle
-    if (this.speedY < 0.1) return;
 
     aPos.y = this.getBaseStandY();
     this.jumpFrameIndex = 0;
@@ -202,12 +203,66 @@ export default class Control {
     } else {
       this.jumpAxis.set(1, 0, 0);
     }
+
     this.isJumping = true;
+  };
+
+  keydownHandler = (e: KeyboardEvent) => {
+    if (e.key === " ") {
+      e.preventDefault();
+    }
+    if (e.key !== " " || this.isJumping) return;
+
+    this.beginCharge();
+  };
+
+  keyupHandler = (e: KeyboardEvent) => {
+    if (e.key === " ") {
+      e.preventDefault();
+    }
+    if (e.key !== " " || this.isJumping) return;
+
+    this.endCharge();
+  };
+
+  private pointerdownHandler = (e: PointerEvent) => {
+    const target = e.target as HTMLElement | null;
+    if (target?.closest(".overlay-card") || target?.closest("#restart")) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (this.activePointerId !== null) return;
+    if (this.isJumping) return;
+
+    e.preventDefault();
+    this.activePointerId = e.pointerId;
+    this.renderer.domElement.setPointerCapture(e.pointerId);
+    this.beginCharge();
+  };
+
+  private pointerupHandler = (e: PointerEvent) => {
+    if (this.activePointerId !== e.pointerId) return;
+    e.preventDefault();
+    this.activePointerId = null;
+    this.endCharge();
+  };
+
+  private pointercancelHandler = (e: PointerEvent) => {
+    if (this.activePointerId !== e.pointerId) return;
+    e.preventDefault();
+    this.activePointerId = null;
+    this.cancelCharge();
   };
 
   initEventListeners = () => {
     document.body.addEventListener("keydown", this.keydownHandler);
     document.body.addEventListener("keyup", this.keyupHandler);
+    this.renderer.domElement.addEventListener("pointerdown", this.pointerdownHandler);
+    this.renderer.domElement.addEventListener("pointerup", this.pointerupHandler);
+    this.renderer.domElement.addEventListener("pointercancel", this.pointercancelHandler);
+    this.renderer.domElement.addEventListener("lostpointercapture", this.pointercancelHandler);
+    window.addEventListener("blur", () => {
+      this.activePointerId = null;
+      this.cancelCharge();
+    });
   };
 
   private setJumpFrame = () => {
@@ -322,6 +377,7 @@ export default class Control {
   };
 
   restart = () => {
+    this.activePointerId = null;
     this.stopAudio(this.chargeAudio);
     this.stopAudio(this.dieAudio);
     this.isJumping = false;
