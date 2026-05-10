@@ -6,9 +6,12 @@ body {
 
     main {
         position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         text-align: center;
-        color: rgb(125, 125, 125);
+        color: #222;
+        z-index: 10;
     }
 
     .overlay {
@@ -26,6 +29,7 @@ body {
         flex-direction: column;
         text-align: center;
         opacity: 0;
+        z-index: 20;
 
         &.active {
             opacity: 1;

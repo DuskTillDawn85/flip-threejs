@@ -112,7 +112,8 @@ export default class Control {
     const xDelta = Math.abs(aPos.x - bPos.x);
 
     if (shape === "cylinder") {
-      const radius = (currentBlock?.userData?.radius as number | undefined) ?? this.block.blockSize / 2;
+      const radius =
+        (currentBlock?.userData?.radius as number | undefined) ?? this.block.blockSize / 2;
       const dx = aPos.x - bPos.x;
       const dz = aPos.z - bPos.z;
       const distance = Math.sqrt(dx * dx + dz * dz);
@@ -129,13 +130,14 @@ export default class Control {
         }
         this.failedCallback!();
       } else {
-        this.block.generateBlocks();
         this.successCallback!();
+        this.block.generateBlocks();
       }
       return;
     }
 
-    const halfLen = this.block.blockSize / 2;
+    const size = (currentBlock?.userData?.size as number | undefined) ?? this.block.blockSize;
+    const halfLen = size / 2;
     if (zDelta > halfLen) {
       zDelta < avatarSize
         ? aPos.z > bPos.z
@@ -151,8 +153,8 @@ export default class Control {
         : this.avatar.fall();
       this.failedCallback!();
     } else {
-      this.block.generateBlocks();
       this.successCallback!();
+      this.block.generateBlocks();
     }
   };
 

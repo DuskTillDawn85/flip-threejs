@@ -42,6 +42,16 @@ export default class Core {
     dLight.intensity = 0.5;
     dLight.castShadow = true;
     dLight.position.set(20, 40, 20);
+    dLight.shadow.mapSize.set(2048, 2048);
+    dLight.shadow.bias = -0.0001;
+    const shadowCamera = dLight.shadow.camera as THREE.OrthographicCamera;
+    shadowCamera.left = -200;
+    shadowCamera.right = 200;
+    shadowCamera.top = 200;
+    shadowCamera.bottom = -200;
+    shadowCamera.near = 1;
+    shadowCamera.far = 800;
+    shadowCamera.updateProjectionMatrix();
     this.scene.add(dLight);
 
     // Helper
@@ -53,8 +63,8 @@ export default class Core {
     this.scene.add(ambientLight);
 
     // Ground (for shadow receiver)
-    const planeG = new THREE.PlaneGeometry(100, 100);
-    const planeM = new THREE.MeshLambertMaterial({ color: 0x222222 });
+    const planeG = new THREE.PlaneGeometry(2000, 2000);
+    const planeM = new THREE.MeshLambertMaterial({ color: 0x666666 });
     const plane = new THREE.Mesh(planeG, planeM);
     plane.rotation.x = -Math.PI / 2;
     plane.position.y = -1;
@@ -66,7 +76,7 @@ export default class Core {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true; // 启用阴影
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.renderer.setClearColor(0x282828);
+    this.renderer.setClearColor(0x666666);
     document.body.appendChild(this.renderer.domElement);
 
     // show Realtime FPS (in dev mode)

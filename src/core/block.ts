@@ -12,11 +12,57 @@ export default class Block {
   blocks: THREE.Mesh[] = [];
   blockSize = 5;
   private blockHeight = 2;
+  private score = 0;
   scene: THREE.Scene;
   camera: THREE.OrthographicCamera;
   cameraPos = {
     current: new THREE.Vector3(),
     next: new THREE.Vector3(),
+  };
+
+  setScore = (score: number) => {
+    this.score = Number.isFinite(score) ? Math.max(0, Math.floor(score)) : 0;
+  };
+
+  private getNextBlockSize = () => {
+    if (this.score <= 15) {
+      return 6;
+    }
+    if (this.score <= 30) {
+      return 5.5;
+    }
+    if (this.score <= 45) {
+      return 5;
+    }
+    if (this.score <= 100) {
+      return 4.5;
+    }
+    return 4;
+  };
+
+  private getNextBlockDistance = (minDistance: number) => {
+    let baseMin = 6;
+    let baseMax = 16;
+    if (this.score <= 20) {
+      baseMin = 6;
+      baseMax = 11;
+    } else if (this.score <= 40) {
+      baseMin = 7;
+      baseMax = 13;
+    } else if (this.score <= 60) {
+      baseMin = 8;
+      baseMax = 15;
+    } else if (this.score <= 100) {
+      baseMin = 9;
+      baseMax = 17;
+    } else {
+      baseMin = 10;
+      baseMax = 20;
+    }
+
+    const min = Math.max(baseMin, minDistance);
+    const max = Math.max(baseMax, min + 0.1);
+    return min + Math.random() * (max - min);
   };
 
   private getRandomBrightColor = () => {
@@ -28,18 +74,19 @@ export default class Block {
 
   private createBlockMesh = () => {
     const isCylinder = Math.random() > 0.5;
+    const size = this.getNextBlockSize();
     const geometry = isCylinder
-      ? new THREE.CylinderGeometry(this.blockSize / 2, this.blockSize / 2, this.blockHeight, 32)
-      : new THREE.BoxGeometry(this.blockSize, this.blockHeight, this.blockSize);
+      ? new THREE.CylinderGeometry(size / 2, size / 2, this.blockHeight, 32)
+      : new THREE.BoxGeometry(size, this.blockHeight, size);
 
     const material = new THREE.MeshPhongMaterial({ color: this.getRandomBrightColor() });
     const mesh = new THREE.Mesh(geometry, material);
     mesh.receiveShadow = mesh.castShadow = true;
     mesh.userData.shape = isCylinder ? "cylinder" : "box";
-    mesh.userData.size = this.blockSize;
+    mesh.userData.size = size;
     mesh.userData.height = this.blockHeight;
     if (isCylinder) {
-      mesh.userData.radius = this.blockSize / 2;
+      mesh.userData.radius = size / 2;
     }
     return mesh;
   };
@@ -59,11 +106,16 @@ export default class Block {
     this.block = this.createBlockMesh();
 
     if (this.blocks.length) {
-      const lastPos = this.blocks[this.blocks.length - 1].position;
+      const lastBlock = this.blocks[this.blocks.length - 1];
+      const lastPos = lastBlock.position;
       this.block.position.set(lastPos.x, lastPos.y, lastPos.z);
 
       // update position for new block
-      const distance = 6 + Math.random() * 10;
+      const newSize = (this.block.userData.size as number | undefined) ?? this.blockSize;
+      const lastSize = (lastBlock.userData.size as number | undefined) ?? this.blockSize;
+      const gap = 2;
+      const minDistance = lastSize / 2 + newSize / 2 + gap;
+      const distance = this.getNextBlockDistance(minDistance);
       Math.random() > 0.5
         ? (this.block.position.z -= distance)
         : (this.block.position.x += distance);
@@ -140,6 +192,7 @@ export default class Block {
       const block = this.blocks.pop();
       block && this.disposeMesh(block);
     }
+    this.score = 0;
     this.cameraPos.current = new THREE.Vector3();
     this.generateBlocks();
     this.generateBlocks(); // it takes two :)

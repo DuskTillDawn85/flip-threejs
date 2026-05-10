@@ -21,6 +21,7 @@ let score = 0;
 document.querySelector("#restart")?.addEventListener("click", () => {
   control.restart();
   score = 0;
+  block.setScore(score);
   overlay?.classList.remove("active");
   scoreDoms.forEach(dom => (dom.textContent = "0"));
 });
@@ -28,6 +29,7 @@ const overlay = document.querySelector(".overlay");
 const scoreDoms = document.querySelectorAll(".score");
 const updateScore = () => {
   score += 1;
+  block.setScore(score);
   scoreDoms.forEach(dom => (dom.textContent = score.toString()));
 };
 const failedCallback = () => {
