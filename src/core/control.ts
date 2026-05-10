@@ -53,6 +53,14 @@ export default class Control {
     audio.currentTime = 0;
   };
 
+  private getStandY = () => {
+    const currentBlock = this.block.blocks[this.block.blocks.length - 1];
+    const blockHeight = (currentBlock?.userData?.height as number | undefined) ?? 2;
+    const avatarHeight = (this.avatar.avatar?.userData?.height as number | undefined) ?? 2;
+    const blockY = currentBlock?.position?.y ?? 0;
+    return blockY + blockHeight / 2 + avatarHeight / 2;
+  };
+
   // callback fn passed from outside
   successCallback: Function | undefined;
   failedCallback: Function | undefined;
@@ -102,8 +110,9 @@ export default class Control {
 
   private setJumpFrame = () => {
     const aPos = this.avatar.getPosition();
+    const standY = this.getStandY();
 
-    if (aPos.y >= 1) {
+    if (aPos.y >= standY) {
       // In the Air, keep moving
       if (this.jumpDirection === "left") {
         aPos.z -= this.speedX;
@@ -118,7 +127,7 @@ export default class Control {
       this.speedY -= 0.01; // Gravity
     } else {
       // On block, stop moving
-      aPos.y = 1;
+      aPos.y = standY;
       this.isJumping = false;
       this.speedOffset = 0;
 

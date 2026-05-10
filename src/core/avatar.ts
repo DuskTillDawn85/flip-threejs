@@ -1,39 +1,25 @@
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import avatarUrl from "../assets/model/avatar2.glb?url";
-
-import * as dat from "dat.gui";
 
 export default class Avatar {
   constructor(scene: THREE.Scene) {
     this.scene = scene;
-    this.loader = new GLTFLoader();
     this.initAvatar();
   }
 
   scene: THREE.Scene;
-  loader: GLTFLoader;
-  avatar: THREE.Object3D = new THREE.Object3D();
+  avatar: THREE.Mesh = new THREE.Mesh();
 
   initAvatar = () => {
-    this.loader.load(avatarUrl, glb => {
-      this.avatar = glb.scene.children[0];
-      this.reset();
-
-      if (import.meta.env.MODE === "development") {
-        const gui = new dat.GUI();
-        gui.add(this.avatar.rotation, "x", -Math.PI, Math.PI, Math.PI / 2);
-        gui.add(this.avatar.rotation, "y", -Math.PI, Math.PI, Math.PI / 2);
-        gui.add(this.avatar.rotation, "z", -Math.PI, Math.PI, Math.PI / 2);
-      }
-
-      // 导入模型激活阴影
-      glb.scene.traverse(node => {
-        node.castShadow = true;
-      });
-
-      this.scene.add(this.avatar);
-    });
+    const radius = 0.7;
+    const height = 2;
+    const geometry = new THREE.CylinderGeometry(radius, radius, height, 24);
+    const material = new THREE.MeshStandardMaterial({ color: 0x3d3d3d });
+    this.avatar = new THREE.Mesh(geometry, material);
+    this.avatar.castShadow = true;
+    this.avatar.userData.radius = radius;
+    this.avatar.userData.height = height;
+    this.reset();
+    this.scene.add(this.avatar);
   };
 
   /**
@@ -90,9 +76,9 @@ export default class Avatar {
   };
 
   reset = () => {
-    this.avatar.position.set(0, 1, 0);
+    const height = (this.avatar.userData.height as number | undefined) ?? 2;
+    this.avatar.position.set(0, 1 + height / 2, 0);
     this.avatar.rotation.set(0, Math.PI / 2, 0);
-    this.avatar.scale.set(2, 2, 2);
   };
 
   getPosition = () => this.avatar.position;
