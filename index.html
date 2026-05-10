@@ -6,18 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="A wx-flip clone based on Three.js" />
     <title>Flip-Jump♟️ - Three.js</title>
-    <script type="module" crossorigin src="/flip-threejs/assets/index.39859890.js"></script>
-    <link rel="stylesheet" href="/flip-threejs/assets/index.f93a7129.css">
+    <script type="module" crossorigin src="/flip-threejs/assets/index.6302bce4.js"></script>
+    <link rel="stylesheet" href="/flip-threejs/assets/index.39e58050.css">
   </head>
 
   <body>
     <main>
-      <h2>分数：<span class="score">0</span></h2>
+      <div class="hud-score-only">
+        <span class="score">0</span>
+      </div>
     </main>
     <div class="overlay">
-      <h1>您的得分</h1>
-      <p class="score">0</p>
-      <span id="restart">再来一次</span>
+      <div class="overlay-card">
+        <div class="overlay-title">游戏结束</div>
+        <div class="overlay-score">
+          <div class="overlay-score-label">本局得分</div>
+          <div class="score">0</div>
+        </div>
+        <button id="restart" type="button">再来一次</button>
+      </div>
     </div>
     
   </body>
