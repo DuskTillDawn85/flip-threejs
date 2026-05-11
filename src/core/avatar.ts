@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { dtFactorFromNowMs } from "./time";
 
 export default class Avatar {
   constructor(scene: THREE.Scene) {
@@ -43,61 +44,71 @@ export default class Avatar {
     this.stopAnimation();
     const token = this.animToken;
     const rotation = this.avatar.rotation;
+    let lastMs = 0;
 
-    const step = () => {
+    const step = (nowMs: number) => {
       if (token !== this.animToken) return;
+
+      if (lastMs === 0) lastMs = nowMs;
+      const dtFactor = dtFactorFromNowMs(nowMs, lastMs);
+      lastMs = nowMs;
+      const delta = 0.05 * dtFactor;
 
       switch (direction) {
         case "x+":
           if (rotation.y <= 0) return;
 
-          rotation.x += 0.05;
-          rotation.y -= 0.05;
-          rotation.z -= 0.05;
+          rotation.x += delta;
+          rotation.y = Math.max(0, rotation.y - delta);
+          rotation.z -= delta;
           this.avatar.rotation.set(rotation.x, rotation.y, rotation.z);
           break;
         case "x-":
           if (rotation.y <= 0) return;
 
-          rotation.x -= 0.05;
-          rotation.y -= 0.05;
-          rotation.z += 0.05;
+          rotation.x -= delta;
+          rotation.y = Math.max(0, rotation.y - delta);
+          rotation.z += delta;
           this.avatar.rotation.set(rotation.x, rotation.y, rotation.z);
           break;
         case "z+":
           if (rotation.x >= Math.PI / 2) return;
 
-          rotation.x += 0.05;
+          rotation.x = Math.min(Math.PI / 2, rotation.x + delta);
           this.avatar.rotation.set(rotation.x, rotation.y, rotation.z);
           break;
         case "z-":
           if (rotation.x <= -Math.PI / 2) return;
 
-          rotation.x -= 0.05;
+          rotation.x = Math.max(-Math.PI / 2, rotation.x - delta);
           this.avatar.rotation.set(rotation.x, rotation.y, rotation.z);
           break;
       }
 
-      this.avatar.position.y -= 0.05;
+      this.avatar.position.y -= delta;
       this.rafId = requestAnimationFrame(step);
     };
 
-    step();
+    this.rafId = requestAnimationFrame(step);
   };
 
   fall = () => {
     this.stopAnimation();
     const token = this.animToken;
+    let lastMs = 0;
 
-    const step = () => {
+    const step = (nowMs: number) => {
       if (token !== this.animToken) return;
       if (this.avatar.position.y <= 0) return;
 
-      this.avatar.position.y -= 0.05;
+      if (lastMs === 0) lastMs = nowMs;
+      const dtFactor = dtFactorFromNowMs(nowMs, lastMs);
+      lastMs = nowMs;
+      this.avatar.position.y = Math.max(0, this.avatar.position.y - 0.05 * dtFactor);
       this.rafId = requestAnimationFrame(step);
     };
 
-    step();
+    this.rafId = requestAnimationFrame(step);
   };
 
   reset = () => {

@@ -6,6 +6,7 @@ import Block from "./core/block";
 import Avatar from "./core/avatar";
 import Control from "./core/control";
 import perfectUrl from "./assets/media/perfect.mp3?url";
+import { dtFactorFromNowMs } from "./core/time";
 
 const core = new Core();
 const camera = core.camera;
@@ -78,10 +79,17 @@ const failedCallback = () => {
 control.setSuccessCallback(updateScore);
 control.setFailedCallback(failedCallback);
 
-(function animate() {
+let lastFrameMs = performance.now();
+
+const animate = (nowMs: number) => {
   requestAnimationFrame(animate);
 
+  const dtFactor = dtFactorFromNowMs(nowMs, lastFrameMs);
+  lastFrameMs = nowMs;
+
   stats.update();
-  control.update();
+  control.update(dtFactor);
   renderer.render(scene, camera);
-})();
+};
+
+requestAnimationFrame(animate);

@@ -5,7 +5,7 @@
   "main": "index.js",
   "homepage": "https://DuskTillDawn85.github.io/flip-threejs/",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build"
   },
   "repository": {

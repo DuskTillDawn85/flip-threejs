@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { dtFactorFromNowMs } from "./time";
 
 export default class Block {
   constructor(scene: THREE.Scene, camera: THREE.OrthographicCamera) {
@@ -164,6 +165,7 @@ export default class Block {
       cancelAnimationFrame(this.cameraRafId);
       this.cameraRafId = undefined;
     }
+    let lastMs = 0;
 
     // 小人当前站的格子
     this.currentX = this.cameraPos.current.x;
@@ -173,21 +175,25 @@ export default class Block {
     const nextX = this.cameraPos.next.x;
     const nextZ = this.cameraPos.next.z;
 
-    const step = () => {
+    const step = (nowMs: number) => {
       if (token !== this.cameraAnimToken) return;
 
       this.currentX = this.cameraPos.current.x;
       this.currentZ = this.cameraPos.current.z;
 
       if (this.currentX < nextX || this.currentZ > nextZ) {
-        this.currentX < nextX && (this.currentX += 0.1);
-        this.currentZ > nextZ && (this.currentZ -= 0.1);
-        if (Math.abs(this.currentX - nextX) < 0.1) {
-          this.currentX = nextX;
+        if (lastMs === 0) lastMs = nowMs;
+        const dtFactor = dtFactorFromNowMs(nowMs, lastMs);
+        lastMs = nowMs;
+        const stepSize = 0.1 * dtFactor;
+
+        if (this.currentX < nextX) {
+          this.currentX = Math.min(nextX, this.currentX + Math.min(stepSize, nextX - this.currentX));
         }
-        if (Math.abs(this.currentZ - nextZ) < 0.1) {
-          this.currentZ = nextZ;
+        if (this.currentZ > nextZ) {
+          this.currentZ = Math.max(nextZ, this.currentZ - Math.min(stepSize, this.currentZ - nextZ));
         }
+
         this.camera.lookAt(new THREE.Vector3(this.currentX, 0, this.currentZ));
         this.cameraPos.current.x = this.currentX;
         this.cameraPos.current.z = this.currentZ;
@@ -199,7 +205,7 @@ export default class Block {
       }
     };
 
-    step();
+    this.cameraRafId = requestAnimationFrame(step);
   };
 
   reset = () => {

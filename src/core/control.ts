@@ -178,40 +178,41 @@ export default class Control {
     this.isJumping = true;
   };
 
-  private setJumpFrame = () => {
+  private setJumpFrame = (dtFactor: number) => {
+    if (!(dtFactor > 0)) return;
     const aPos = this.avatar.getPosition();
     const standY = this.getStandY();
 
     if (aPos.y >= standY) {
       // In the Air, keep moving
       if (this.jumpDirection === "left") {
-        aPos.z -= this.speedX;
-        aPos.x -= this.speedOffset;
+        aPos.z -= this.speedX * dtFactor;
+        aPos.x -= this.speedOffset * dtFactor;
       } else {
         // right
-        aPos.x += this.speedX;
-        aPos.z += this.speedOffset;
+        aPos.x += this.speedX * dtFactor;
+        aPos.z += this.speedOffset * dtFactor;
       }
-      aPos.y += this.speedY;
+      aPos.y += this.speedY * dtFactor;
 
-      this.speedY -= 0.01; // Gravity
+      this.speedY -= 0.01 * dtFactor;
 
       if (this.jumpTotalFrames > 0) {
+        this.jumpFrameIndex = Math.min(this.jumpTotalFrames, this.jumpFrameIndex + dtFactor);
         const t = Math.min(1, this.jumpFrameIndex / this.jumpTotalFrames);
         this.avatar.avatar.quaternion
           .copy(this.jumpStartQuat)
           .multiply(new THREE.Quaternion().setFromAxisAngle(this.jumpAxis, t * Math.PI * 2));
-        this.jumpFrameIndex += 1;
       }
-    } else {
-      // On block, stop moving
+    }
+
+    if (aPos.y <= standY && this.speedY < 0) {
       aPos.y = standY;
       this.isJumping = false;
       this.speedOffset = 0;
       this.jumpTotalFrames = 0;
       this.jumpFrameIndex = 0;
       this.avatar.avatar.quaternion.copy(this.jumpStartQuat);
-
       this.checkGameState();
     }
   };
@@ -310,7 +311,7 @@ export default class Control {
     this.camera.lookAt(0, 0, 0);
   };
 
-  update = () => {
+  update = (dtFactor: number = 1) => {
     if (!this.isJumping && this.keydownTime !== 0) {
       const duration = performance.now() - this.keydownTime;
       const progress01 = duration / this.maxChargeMs;
@@ -318,6 +319,6 @@ export default class Control {
     }
     this.squashBounce.update(this.isJumping, this.getStandY());
     this.perfectEffects.update();
-    this.isJumping && this.setJumpFrame();
+    this.isJumping && this.setJumpFrame(dtFactor);
   };
 }
