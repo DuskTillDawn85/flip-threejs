@@ -1,4 +1,4 @@
-export const BASE_FPS = 144;
+export const BASE_FPS = 120;
 
 export const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 

@@ -200,9 +200,8 @@ export default class Control {
       if (this.jumpTotalFrames > 0) {
         this.jumpFrameIndex = Math.min(this.jumpTotalFrames, this.jumpFrameIndex + dtFactor);
         const t = Math.min(1, this.jumpFrameIndex / this.jumpTotalFrames);
-        this.avatar.avatar.quaternion
-          .copy(this.jumpStartQuat)
-          .multiply(new THREE.Quaternion().setFromAxisAngle(this.jumpAxis, t * Math.PI * 2));
+        const rot = new THREE.Quaternion().setFromAxisAngle(this.jumpAxis, -t * Math.PI * 2);
+        this.avatar.avatar.quaternion.copy(this.jumpStartQuat).premultiply(rot);
       }
     }
 
