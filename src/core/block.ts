@@ -1,6 +1,12 @@
 import * as THREE from "three";
 import { dtFactorFromNowMs } from "./time";
 
+export const BLOCK_HEIGHT = 2;
+export const BLOCK_MAX_SIZE = 6;
+export const BLOCK_MIN_SIZE = 4;
+export const BLOCK_GAP = 2;
+export const BLOCK_MAX_DISTANCE = 20;
+
 export default class Block {
   constructor(scene: THREE.Scene, camera: THREE.OrthographicCamera) {
     this.scene = scene;
@@ -12,7 +18,7 @@ export default class Block {
   block = new THREE.Mesh();
   blocks: THREE.Mesh[] = [];
   blockSize = 5;
-  private blockHeight = 2;
+  private blockHeight = BLOCK_HEIGHT;
   private score = 0;
   scene: THREE.Scene;
   camera: THREE.OrthographicCamera;
@@ -29,7 +35,7 @@ export default class Block {
 
   private getNextBlockSize = () => {
     if (this.score <= 15) {
-      return 6;
+      return BLOCK_MAX_SIZE;
     }
     if (this.score <= 30) {
       return 5.5;
@@ -40,7 +46,7 @@ export default class Block {
     if (this.score <= 100) {
       return 4.5;
     }
-    return 4;
+    return BLOCK_MIN_SIZE;
   };
 
   private getNextBlockDistance = (minDistance: number) => {
@@ -60,7 +66,7 @@ export default class Block {
       baseMax = 17;
     } else {
       baseMin = 10;
-      baseMax = 20;
+      baseMax = BLOCK_MAX_DISTANCE;
     }
 
     const min = Math.max(baseMin, minDistance);
@@ -116,7 +122,7 @@ export default class Block {
       // update position for new block
       const newSize = (this.block.userData.size as number | undefined) ?? this.blockSize;
       const lastSize = (lastBlock.userData.size as number | undefined) ?? this.blockSize;
-      const gap = 2;
+      const gap = BLOCK_GAP;
       const minDistance = lastSize / 2 + newSize / 2 + gap;
       const distance = this.getNextBlockDistance(minDistance);
       Math.random() > 0.5
