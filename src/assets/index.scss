@@ -12,6 +12,10 @@ body {
     background: linear-gradient(180deg, #d8edf4 0%, #bddbc1 100%);
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
 
     main {
         position: fixed;
@@ -53,6 +57,9 @@ body {
         height: 100%;
         display: block;
         touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
     }
 
     .overlay {
